@@ -1,0 +1,199 @@
+/*==========================================================
+PROJECT : FinTrack V3
+
+AUTHOR  : Mohd Talib Ahmed Khan
+
+FILE    : style.css
+
+PURPOSE :
+
+This file contains the main styling
+for the application.
+
+==========================================================*/
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+
+:root{
+
+    /* Primary Color */
+
+    --primary:#080e1a8f;
+
+    /* Background */
+
+    --background:#f5f7fb;
+
+    /* White */
+
+    --white:#ffffff;
+
+    /* Dark */
+
+    --dark:#1e293b;
+
+    /* Grey */
+
+    --grey:#3f4752;
+
+    /* Border */
+
+    --border:#e2e8f0;
+
+    /* Shadow */
+
+    --shadow:
+
+    0 10px 30px rgba(0,0,0,.08);
+
+}
+
+
+
+
+body{
+
+    font-family:'Poppins',sans-serif;
+
+    background:var(--background);
+
+    color:var(--dark);
+
+}
+
+
+
+.header{
+
+    background:var(--white);
+
+    box-shadow:var(--shadow);
+
+}
+
+
+.navbar{
+
+    max-width:1400px;
+
+    margin:auto;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:18px 40px;
+
+}
+
+.logo{
+
+    text-decoration:none;
+
+    color:var(--primary);
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
+
+
+.logo:hover{
+    color: var(--grey);
+}
+.nav-center{
+
+    display:flex;
+
+    gap:30px;
+
+}
+
+.nav-center a{
+
+    text-decoration:none;
+
+    color:var(--dark);
+
+    font-weight:500;
+
+    transition:.3s;
+
+}
+
+.nav-center a:hover{
+
+    color:var(--primary);
+
+}
+
+.nav-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.nav-right input{
+
+    padding:10px 15px;
+
+    border:1px solid var(--border);
+
+    border-radius:20px;
+
+    outline:none;
+
+    font-family:inherit;
+
+}
+
+.theme-btn,
+
+.profile-btn{
+
+    width:45px;
+
+    height:45px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:var(--background);
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.theme-btn:hover,
+
+.profile-btn:hover{
+
+    background:var(--primary);
+
+    color:white;
+
+}
