@@ -260,6 +260,113 @@ This also helps screen readers for accessibility.
 
     </section>
 
+     <section class="charts-section">
+
+    <div class="chart-card">
+
+        <h2>Expenses by Category</h2>
+
+        <canvas id="expenseChart"></canvas>
+
+    </div>
+
+    <div class="chart-card">
+
+        <h2>Income vs Expense</h2>
+
+        <canvas id="incomeExpenseChart"></canvas>
+
+    </div>
+    
+    <div class="chart-card">
+
+    <h2>Monthly Expenses</h2>
+
+    <canvas id="monthlyExpenseChart"></canvas>
+
+</div>
+</section>
+
+<!-- ========================================
+     Budget Planner
+========================================= -->
+
+<section class="budget-section">
+
+    <h2>Monthly Budget Planner</h2>
+
+    <form id="budget-form">
+
+        <select id="budget-category">
+
+            <option>Food</option>
+
+            <option>Bills</option>
+
+            <option>Travel</option>
+
+            <option>Shopping</option>
+
+            <option>Entertainment</option>
+
+            <option>Health</option>
+
+            <option>Education</option>
+
+            <option>Other</option>
+
+        </select>
+
+        <input
+            type="number"
+            id="budget-amount"
+            placeholder="Budget Amount"
+            required
+        >
+
+        <button type="submit">
+
+            Save Budget
+
+        </button>
+
+    </form>
+
+    <div id="budget-list">
+
+    </div>
+
+</section>
+<!-- ========================================
+     Savings Goal
+========================================= -->
+
+<section class="goal-section">
+
+    <h2>Savings Goal Tracker</h2>
+
+    <form id="goal-form">
+
+        <input
+            type="number"
+            id="goal-amount"
+            placeholder="Enter Savings Goal"
+            required
+        >
+
+        <button type="submit">
+
+            Save Goal
+
+        </button>
+
+    </form>
+
+    <div id="goal-card">
+
+    </div>
+
+</section>
     <!--==========================================================
     TRANSACTION FORM
 ===========================================================-->
@@ -443,7 +550,16 @@ This also helps screen readers for accessibility.
     <option value="date-old">Oldest First</option>
 
 </select>
+<button id="export-csv-btn">
 
+    Export CSV
+
+</button>
+<button id="export-pdf-btn">
+
+    Export PDF
+
+</button>
 </div>
 <!--==========================================================
     TRANSACTION TABLE
@@ -487,13 +603,22 @@ This also helps screen readers for accessibility.
 
 </section>
 </main>
+<!--==========================================================
+NOTIFICATION CONTAINER
+===========================================================-->
 
+<div id="toast-container">
+
+</div>
     <footer>
 
     </footer>
-<i class="fa-solid fa-wallet"></i>
    
-    <script src="js/app.js"></script>
+    <!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Main JavaScript -->
+<script src="js/app.js"></script>
 
 </body>
 
