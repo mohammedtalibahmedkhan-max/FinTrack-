@@ -22,11 +22,26 @@ This file controls
 ==========================================================
 */
 
+/*=========================================
+LOGIN PROTECTION
+=========================================*/
 
+const loggedIn =
+
+localStorage.getItem("loggedIn")==="true" ||
+
+sessionStorage.getItem("loggedIn")==="true";
+
+if(!loggedIn){
+
+window.location="login.html";
+
+}
 /*==========================================================
 DOM ELEMENTS
 ==========================================================*/
-
+const logoutButton =
+document.getElementById("logout-btn");
 // Transaction Form
 const transactionForm = document.getElementById("transaction-form");
 
@@ -35,7 +50,8 @@ const amountInput = document.getElementById("amount");
 const categoryInput = document.getElementById("category");
 const typeInput = document.getElementById("type");
 const dateInput = document.getElementById("date");
-
+const recurringInput =
+document.getElementById("recurring");
 // Transaction Table
 const transactionList =
 document.getElementById("transaction-list");
@@ -111,11 +127,61 @@ SAVINGS GOAL
 const goalForm =
 document.getElementById("goal-form");
 
+const goalNameInput =
+document.getElementById("goal-name");
+
 const goalAmountInput =
 document.getElementById("goal-amount");
 
-const goalCard =
-document.getElementById("goal-card");
+const goalList =
+document.getElementById("goal-list");
+
+const notificationContainer =
+document.getElementById("notification-container");
+
+const insightsContainer =
+document.getElementById("insights-container");
+/*==========================================================
+LOADING ELEMENT
+==========================================================*/
+
+const loadingOverlay =
+document.getElementById(
+    "loading-overlay"
+);
+/*==========================================================
+ANALYTICS ELEMENTS
+==========================================================*/
+
+const highestExpenseElement =
+document.getElementById("highest-expense");
+
+const highestIncomeElement =
+document.getElementById("highest-income");
+
+const averageTransactionElement =
+document.getElementById("average-transaction");
+
+const totalTransactionsElement =
+document.getElementById("total-transactions");
+
+const topCategoryElement =
+document.getElementById("top-category");
+
+const monthlyExpenseElement =
+document.getElementById("monthly-expense");
+
+const settings =
+
+JSON.parse(
+
+localStorage.getItem("settings")
+
+) || {};
+
+const currency =
+
+settings.currency || "₹";
 /*==========================================================
 APPLICATION DATA
 ==========================================================*/
@@ -138,7 +204,7 @@ BUDGET DATA
 ==========================================================*/
 
 let budgets = {};
-let savingsGoal = 0;
+let goals = [];
 // Edit Mode
 let editingTransactionId = null;
 
@@ -201,6 +267,22 @@ exportPdfButton.addEventListener(
     exportPDF
 
 );
+
+logoutButton.addEventListener(
+
+"click",
+
+function(){
+
+localStorage.removeItem(
+
+"loggedIn"
+
+);
+
+window.location="login.html";
+
+});
 /*==========================================================
 ADD TRANSACTION
 ==========================================================*/
@@ -208,6 +290,8 @@ ADD TRANSACTION
 function addTransaction(event){
 
     event.preventDefault();
+
+    showLoader();
 
     const title =
     titleInput.value.trim();
@@ -223,6 +307,10 @@ function addTransaction(event){
 
     const date =
     dateInput.value;
+
+    const recurring =
+recurringInput.value;
+    const isEditing = editingTransactionId !== null;
 
     if(editingTransactionId !== null){
 
@@ -262,7 +350,9 @@ function addTransaction(event){
 
             type,
 
-            date
+            date,
+
+            recurring
 
         };
 
@@ -276,8 +366,33 @@ function addTransaction(event){
 
     updateDashboard();
 
+    setTimeout(function(){
+
     transactionForm.reset();
 
+    showNotification(
+
+    "Success",
+
+    "Transaction saved successfully.",
+
+    "success"
+
+);
+
+    hideLoader();
+
+    showToast(
+
+        isEditing
+            ? "Transaction updated successfully!"
+            : "Transaction added successfully!",
+
+        "success"
+
+    );
+
+},500);
 }
 
 
@@ -301,9 +416,21 @@ function displayTransactions(list = transactions){
 
             <td>${transaction.type}</td>
 
-            <td>₹${transaction.amount.toFixed(2)}</td>
+            <td>${currency}${transaction.amount.toFixed(2)}</td>
 
-            <td>${transaction.date}</td>
+            <td>
+
+    ${transaction.date}
+
+    <br>
+
+    <small>
+
+        ${transaction.recurring}
+
+    </small>
+
+</td>
 
             <td>
 
@@ -359,17 +486,17 @@ function updateDashboard(){
 
     const balance = income - expense;
 
-    balanceElement.textContent =
-    `₹${balance.toFixed(2)}`;
+   balanceElement.textContent =
+`${currency}${balance.toFixed(2)}`;
 
     incomeElement.textContent =
-    `₹${income.toFixed(2)}`;
+    `${currency}${income.toFixed(2)}`;
 
     expenseElement.textContent =
-    `₹${expense.toFixed(2)}`;
+    `${currency}${expense.toFixed(2)}`;
 
     savingsElement.textContent =
-    `₹${balance.toFixed(2)}`;
+    `${currency}${balance.toFixed(2)}`;
 
     updateExpenseChart();
 
@@ -378,9 +505,102 @@ updateIncomeExpenseChart();
 updateMonthlyExpenseChart();
 
 displayBudgets();
-displayGoal();
+displayGoals();
+updateInsights();
+updateAnalytics();
 }
+/*==========================================================
+UPDATE ANALYTICS
+==========================================================*/
 
+function updateAnalytics(){
+
+    let highestExpense = 0;
+    let highestIncome = 0;
+    let totalAmount = 0;
+    let monthlyExpense = 0;
+
+    const categoryCount = {};
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    transactions.forEach(function(transaction){
+
+        totalAmount += transaction.amount;
+
+        categoryCount[transaction.category] =
+            (categoryCount[transaction.category] || 0) + 1;
+
+        if(transaction.type === "Expense"){
+
+            if(transaction.amount > highestExpense){
+
+                highestExpense = transaction.amount;
+
+            }
+
+            const transactionDate = new Date(transaction.date);
+
+            if(
+                transactionDate.getMonth() === currentMonth &&
+                transactionDate.getFullYear() === currentYear
+            ){
+
+                monthlyExpense += transaction.amount;
+
+            }
+
+        }else{
+
+            if(transaction.amount > highestIncome){
+
+                highestIncome = transaction.amount;
+
+            }
+
+        }
+
+    });
+
+    const average =
+        transactions.length
+        ? totalAmount / transactions.length
+        : 0;
+
+    let topCategory = "None";
+    let maxCount = 0;
+
+    for(const category in categoryCount){
+
+        if(categoryCount[category] > maxCount){
+
+            maxCount = categoryCount[category];
+            topCategory = category;
+
+        }
+
+    }
+
+    highestExpenseElement.textContent =
+        `₹${highestExpense.toFixed(2)}`;
+
+    highestIncomeElement.textContent =
+        `₹${highestIncome.toFixed(2)}`;
+
+    averageTransactionElement.textContent =
+        `₹${average.toFixed(2)}`;
+
+    totalTransactionsElement.textContent =
+        transactions.length;
+
+    topCategoryElement.textContent =
+        topCategory;
+
+    monthlyExpenseElement.textContent =
+        `₹${monthlyExpense.toFixed(2)}`;
+
+}
 
 /*==========================================================
 LOCAL STORAGE
@@ -448,6 +668,22 @@ function deleteTransaction(id){
 
     updateDashboard();
 
+    showNotification(
+
+    "Deleted",
+
+    "Transaction removed.",
+
+    "warning"
+
+);
+    showToast(
+
+    "Transaction deleted successfully!",
+
+    "warning"
+
+);
 }
 
 
@@ -797,6 +1033,13 @@ function saveBudget(event){
 
     budgetForm.reset();
 
+    showToast(
+
+    "Budget saved successfully!",
+
+    "success"
+
+);
 }
 function displayBudgets(){
 
@@ -838,11 +1081,21 @@ function displayBudgets(){
 
         }
 
-        if(spent>budget){
+       if(spent>budget){
 
-            color="#EF4444";
+    color="#EF4444";
 
-        }
+    showNotification(
+
+        "Budget Alert",
+
+        category + " budget exceeded.",
+
+        "error"
+
+    );
+
+}
 
         budgetList.innerHTML+=`
 
@@ -852,11 +1105,11 @@ function displayBudgets(){
 
             <p>
 
-            ₹${spent.toFixed(2)}
+            ${currency}${spent.toFixed(2)}
 
             /
 
-            ₹${budget.toFixed(2)}
+            ${currency}${budget.toFixed(2)}
 
             </p>
 
@@ -902,13 +1155,19 @@ function saveGoal(event){
 
     event.preventDefault();
 
-    savingsGoal = Number(
+    const goal = {
 
-        goalAmountInput.value
+        id:Date.now(),
 
-    );
+        name:goalNameInput.value,
 
-    displayGoal();
+        target:Number(goalAmountInput.value)
+
+    };
+
+    goals.push(goal);
+
+    displayGoals();
 
     goalForm.reset();
 
@@ -916,130 +1175,110 @@ function saveGoal(event){
 /*==================================================
 DISPLAY GOAL
 ==================================================*/
+function displayGoals(){
 
-function displayGoal(){
+    goalList.innerHTML="";
 
-    if(savingsGoal <= 0){
-
-        goalCard.innerHTML = "";
-
-        return;
-
-    }
-
-    let income = 0;
-
-    let expense = 0;
+    let income=0;
+    let expense=0;
 
     transactions.forEach(function(transaction){
 
-        if(transaction.type === "Income"){
+        if(transaction.type==="Income"){
 
-            income += transaction.amount;
+            income+=transaction.amount;
 
         }else{
 
-            expense += transaction.amount;
+            expense+=transaction.amount;
 
         }
 
     });
 
-    const savings = income - expense;
+    const savings=income-expense;
 
-    const percentage =
+    goals.forEach(function(goal){
 
-    Math.min(
+        const percent=Math.min(
+            savings/goal.target*100,
+            100
+        );
 
-        (savings / savingsGoal) * 100,
+        if(percent >= 100){
 
-        100
+    showNotification(
+
+        "Congratulations!",
+
+        goal.name + " completed.",
+
+        "success"
 
     );
 
-    const remaining =
+}
+        goalList.innerHTML+=`
 
-    Math.max(
+        <div class="goal-item">
 
-        savingsGoal - savings,
+            <h3>${goal.name}</h3>
 
-        0
+            <p>
 
-    );
+                ${currency}${savings.toFixed(2)}
 
-    let color = "#22C55E";
+                /
 
-    if(percentage >= 80){
+                ₹${goal.target.toFixed(2)}
 
-        color = "#F59E0B";
+            </p>
 
-    }
+            <div class="progress-bar">
 
-    if(savings >= savingsGoal){
+                <div
+                class="progress"
 
-        color = "#16A34A";
+                style="width:${percent}%">
 
-    }
-
-    goalCard.innerHTML = `
-
-    <div class="goal-card">
-
-        <h3>
-
-            Goal
-
-            ₹${savingsGoal.toFixed(2)}
-
-        </h3>
-
-        <p>
-
-            Current Savings
-
-            ₹${savings.toFixed(2)}
-
-        </p>
-
-        <div class="progress-bar">
-
-            <div
-
-            class="progress"
-
-            style="
-
-                width:${percentage}%;
-
-                background:${color};
-
-            ">
+                </div>
 
             </div>
 
+            <p>
+
+                ${percent.toFixed(1)}%
+
+            </p>
+
+            <button
+
+            onclick="deleteGoal(${goal.id})">
+
+            Delete
+
+            </button>
+
         </div>
 
-        <p>
+        `;
 
-            ${percentage.toFixed(1)}%
-
-            Completed
-
-        </p>
-
-        <p>
-
-            Remaining:
-
-            ₹${remaining.toFixed(2)}
-
-        </p>
-
-    </div>
-
-    `;
+    });
 
 }
+
+function deleteGoal(id){
+
+    goals = goals.filter(function(goal){
+
+        return goal.id !== id;
+
+    });
+
+    displayGoals();
+
+}
+
 /*==================================================
 EXPORT CSV
 ==================================================*/
@@ -1048,15 +1287,23 @@ function exportCSV(){
 
     if(transactions.length === 0){
 
-        alert("No transactions available.");
+        showToast(
+
+    "No transactions available.",
+
+    "error"
+
+);
 
         return;
 
     }
 
+    showLoader();
+
     let csv =
 
-    "Title,Category,Type,Amount,Date\n";
+    "Title,Category,Type,Amount,Date,Recurring\n";
 
     transactions.forEach(function(transaction){
 
@@ -1070,7 +1317,7 @@ function exportCSV(){
 
         `${transaction.amount},` +
 
-        `${transaction.date}\n`;
+        `${transaction.date},${transaction.recurring}\n`;
 
     });
 
@@ -1106,6 +1353,16 @@ function exportCSV(){
 
     URL.revokeObjectURL(url);
 
+setTimeout(function(){
+
+    hideLoader();
+
+    showToast(
+        "CSV exported successfully!",
+        "success"
+    );
+
+},1000);
 }
 
 /*==================================================
@@ -1115,12 +1372,18 @@ EXPORT PDF
 function exportPDF(){
 
     if(transactions.length === 0){
+showToast(
 
-        alert("No transactions available.");
+    "No transactions available.",
 
+    "error"
+
+);
         return;
 
     }
+
+    showLoader();
 
     const { jsPDF } = window.jspdf;
 
@@ -1140,7 +1403,7 @@ function exportPDF(){
     doc.text("Type", 110, y);
     doc.text("Amount", 150, y);
     doc.text("Date", 180, y);
-
+    doc.text("Recurring", 230, y);
     y += 10;
 
     let income = 0;
@@ -1151,8 +1414,9 @@ function exportPDF(){
         doc.text(transaction.title, 20, y);
         doc.text(transaction.category, 60, y);
         doc.text(transaction.type, 110, y);
-        doc.text(`rs.${transaction.amount}`, 150, y);
+        doc.text(`${currency}${transaction.amount}`,150,y);
         doc.text(transaction.date, 180, y);
+        doc.text(transaction.recurring, 230, y);
 
         if(transaction.type === "Income"){
 
@@ -1183,26 +1447,333 @@ function exportPDF(){
 
     doc.setFontSize(14);
 
-    doc.text(`Income : rs.${income.toFixed(2)}`,20,y);
+    doc.text(`Income : ${currency}${income.toFixed(2)}`,20,y);
 
     y += 10;
 
-    doc.text(`Expense : rs.${expense.toFixed(2)}`,20,y);
+    doc.text(`Expense : ${currency}${expense.toFixed(2)}`,20,y);
 
     y += 10;
 
-    doc.text(`Balance : rs.${balance.toFixed(2)}`,20,y);
+    doc.text(`Balance : ${currency}${balance.toFixed(2)}`,20,y);
 
     doc.save("FinTrack-Report.pdf");
 
+setTimeout(function(){
+
+    hideLoader();
+
+    showToast(
+        "PDF exported successfully!",
+        "success"
+    );
+
+},1000);
+}
+/*==========================================================
+NOTIFICATION SYSTEM
+==========================================================*/
+
+function showNotification(title, message, type = "info"){
+
+    const notification = document.createElement("div");
+
+    notification.className =
+    `notification ${type}`;
+
+    notification.innerHTML = `
+
+        <h4>${title}</h4>
+
+        <p>${message}</p>
+
+    `;
+
+    notificationContainer.appendChild(notification);
+
+    setTimeout(function(){
+
+        notification.remove();
+
+    },3000);
+
 }
 
+/*==========================================================
+GENERATE RECURRING TRANSACTIONS
+==========================================================*/
+
+function generateRecurringTransactions(){
+
+    const today = new Date();
+
+    const currentMonth = today.getMonth();
+
+    const currentYear = today.getFullYear();
+
+    transactions.forEach(function(transaction){
+
+        if(transaction.recurring !== "Monthly"){
+
+            return;
+
+        }
+
+        const transactionDate = new Date(transaction.date);
+
+        const alreadyExists = transactions.some(function(item){
+
+            return (
+
+                item.title === transaction.title &&
+
+                new Date(item.date).getMonth() === currentMonth &&
+
+                new Date(item.date).getFullYear() === currentYear
+
+            );
+
+        });
+
+        if(!alreadyExists){
+
+            const newTransaction = {
+
+                ...transaction,
+
+                id: Date.now() + Math.random(),
+
+                date: today.toISOString().split("T")[0]
+
+            };
+
+            transactions.push(newTransaction);
+
+        }
+
+    });
+
+    saveTransactions();
+
+}
+/*==========================================================
+SMART INSIGHTS
+==========================================================*/
+
+function updateInsights(){
+
+    insightsContainer.innerHTML = "";
+
+    if(transactions.length === 0){
+
+        insightsContainer.innerHTML = `
+
+        <div class="insight-card">
+
+            <h3>No Data</h3>
+
+            <p>
+
+                Add transactions to see financial insights.
+
+            </p>
+
+        </div>
+
+        `;
+
+        return;
+
+    }
+
+    let categoryTotals = {};
+
+    let largestExpense = null;
+
+    let totalExpense = 0;
+
+    let expenseCount = 0;
+
+    let income = 0;
+
+    transactions.forEach(function(transaction){
+
+        if(transaction.type === "Income"){
+
+            income += transaction.amount;
+
+        }
+
+        if(transaction.type === "Expense"){
+
+            totalExpense += transaction.amount;
+
+            expenseCount++;
+
+            if(
+
+                !largestExpense ||
+
+                transaction.amount >
+
+                largestExpense.amount
+
+            ){
+
+                largestExpense = transaction;
+
+            }
+
+            if(!categoryTotals[transaction.category]){
+
+                categoryTotals[transaction.category] = 0;
+
+            }
+
+            categoryTotals[transaction.category] += transaction.amount;
+
+        }
+
+    });
+
+    let highestCategory = "";
+
+    let highestAmount = 0;
+
+    for(const category in categoryTotals){
+
+        if(categoryTotals[category] > highestAmount){
+
+            highestAmount = categoryTotals[category];
+
+            highestCategory = category;
+
+        }
+
+    }
+
+    const averageExpense =
+
+    expenseCount === 0
+
+    ? 0
+
+    : totalExpense / expenseCount;
+
+    const savings = income - totalExpense;
+
+    const savingsRate =
+
+    income === 0
+
+    ? 0
+
+    : (savings / income) * 100;
+
+    let recommendation =
+
+    "Great job managing your finances.";
+
+    if(savingsRate < 20){
+
+        recommendation =
+
+        "Try saving at least 20% of your income.";
+
+    }
+
+    if(highestCategory){
+
+        recommendation +=
+
+        "<br><br>Highest spending category: <strong>" +
+
+        highestCategory +
+
+        "</strong>";
+
+    }
+
+    insightsContainer.innerHTML = `
+
+    <div class="insight-card">
+
+        <h3>Highest Spending Category</h3>
+
+        <p>${highestCategory || "N/A"}</p>
+
+    </div>
+
+    <div class="insight-card">
+
+        <h3>Largest Expense</h3>
+
+        <p>
+
+        ${largestExpense ?
+
+        largestExpense.title +
+
+        " (" +
+currency +
+largestExpense.amount.toFixed(2) +
+")"
+
+        : "N/A"}
+
+        </p>
+
+    </div>
+
+    <div class="insight-card">
+
+        <h3>Average Expense</h3>
+
+        <p>
+
+        ${currency}${averageExpense.toFixed(2)}
+
+        </p>
+
+    </div>
+
+    <div class="insight-card">
+
+        <h3>Savings Rate</h3>
+
+        <p>
+
+        ${savingsRate.toFixed(1)}%
+
+        </p>
+
+    </div>
+
+    <div class="insight-card">
+
+        <h3>Recommendation</h3>
+
+        <p>
+
+        ${recommendation}
+
+        </p>
+
+    </div>
+
+    `;
+
+}
 /*==========================================================
 INITIALIZE
 ==========================================================*/
 
 loadTransactions();
+generateRecurringTransactions();
 
+filterTransactions();
+
+updateDashboard();
 /*==========================================================
 TOAST NOTIFICATION SYSTEM
 ==========================================================*/
@@ -1243,4 +1814,28 @@ function showToast(message, type = "success") {
     }, 3000);
 
 }
-showToast("Welcome to FinTrack!", "success");
+/*==========================================================
+LOADING FUNCTIONS
+==========================================================*/
+
+function showLoader(){
+
+    loadingOverlay.style.display =
+    "flex";
+
+}
+
+function hideLoader(){
+
+    loadingOverlay.style.display =
+    "none";
+
+}
+
+showLoader();
+
+setTimeout(function(){
+
+    hideLoader();
+
+},3000);

@@ -182,11 +182,28 @@ This also helps screen readers for accessibility.
 
             </button>
 
-            <button class="profile-btn" aria-label="Open user profile">
+           <a href="profile.html">
 
-                <i class="fa-solid fa-user"></i>
+<button
+class="profile-btn">
 
-            </button>
+<i class="fa-solid fa-user"></i>
+
+</button>
+
+</a>
+
+<button
+class="profile-btn"
+id="logout-btn">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+<!-- </button>
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+</button> -->
 
         </div>
 
@@ -260,6 +277,67 @@ This also helps screen readers for accessibility.
 
     </section>
 
+    <!--==========================================================
+ANALYTICS PANEL
+===========================================================-->
+
+<section class="analytics-section">
+
+    <h2>Financial Insights</h2>
+
+    <div class="analytics-grid">
+
+        <article class="analytics-card">
+
+            <h3>Highest Expense</h3>
+
+            <p id="highest-expense">₹0.00</p>
+
+        </article>
+
+        <article class="analytics-card">
+
+            <h3>Highest Income</h3>
+
+            <p id="highest-income">₹0.00</p>
+
+        </article>
+
+        <article class="analytics-card">
+
+            <h3>Average Transaction</h3>
+
+            <p id="average-transaction">₹0.00</p>
+
+        </article>
+
+        <article class="analytics-card">
+
+            <h3>Total Transactions</h3>
+
+            <p id="total-transactions">0</p>
+
+        </article>
+
+        <article class="analytics-card">
+
+            <h3>Most Used Category</h3>
+
+            <p id="top-category">None</p>
+
+        </article>
+
+        <article class="analytics-card">
+
+            <h3>This Month Expense</h3>
+
+            <p id="monthly-expense">₹0.00</p>
+
+        </article>
+
+    </div>
+
+</section>
      <section class="charts-section">
 
     <div class="chart-card">
@@ -354,6 +432,11 @@ This also helps screen readers for accessibility.
             required
         >
 
+        <input
+    type="text"
+    id="goal-name"
+    placeholder="Goal Name"
+    required>
         <button type="submit">
 
             Save Goal
@@ -362,7 +445,7 @@ This also helps screen readers for accessibility.
 
     </form>
 
-    <div id="goal-card">
+    <div id="goal-list">
 
     </div>
 
@@ -477,6 +560,45 @@ This also helps screen readers for accessibility.
 
         </div>
 
+        <!-- Recurring Transaction -->
+
+<div class="form-group">
+
+    <label for="recurring">
+
+        Recurring
+
+    </label>
+
+    <select id="recurring">
+
+        <option value="No">
+
+            No
+
+        </option>
+
+        <option value="Monthly">
+
+            Monthly
+
+        </option>
+
+        <option value="Weekly">
+
+            Weekly
+
+        </option>
+
+        <option value="Yearly">
+
+            Yearly
+
+        </option>
+
+    </select>
+
+</div>
         <!-- Submit Button -->
         <button
             type="submit"
@@ -602,6 +724,19 @@ This also helps screen readers for accessibility.
     </table>
 
 </section>
+<!-- ==========================================
+SMART INSIGHTS
+========================================== -->
+
+<section class="insights-section">
+
+    <h2>📊 Smart Financial Insights</h2>
+
+    <div id="insights-container">
+
+    </div>
+
+</section>
 </main>
 <!--==========================================================
 NOTIFICATION CONTAINER
@@ -610,10 +745,35 @@ NOTIFICATION CONTAINER
 <div id="toast-container">
 
 </div>
+
+<!--==========================================================
+LOADING OVERLAY
+===========================================================-->
+
+<div id="loading-overlay">
+
+    <div class="loader-box">
+
+        <div class="loader"></div>
+
+        <p>
+
+            Please Wait...
+
+        </p>
+
+    </div>
+
+</div>
     <footer>
 
     </footer>
-   
+   <!-- ===========================================
+Notification Container
+JavaScript will create notifications here.
+=========================================== -->
+
+<div id="notification-container"></div>
     <!-- Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
