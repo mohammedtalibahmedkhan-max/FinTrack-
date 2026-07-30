@@ -157,3 +157,13 @@ alert(
 );
 
 });
+
+document.body.className = "";
+
+if(settings.darkMode){
+
+    document.body.classList.add("dark");
+
+}
+
+document.body.classList.add(settings.theme || "blue");

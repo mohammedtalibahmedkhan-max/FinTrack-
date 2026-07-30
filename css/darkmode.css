@@ -1,0 +1,71 @@
+/*=====================================
+DARK MODE
+=====================================*/
+
+body.dark{
+
+background:#111827;
+
+color:white;
+
+transition:.3s;
+
+}
+
+body.dark .card,
+body.dark .chart-card,
+body.dark .budget-card,
+body.dark .goal-card,
+body.dark table,
+body.dark .profile-card{
+
+background:#1f2937;
+
+color:white;
+
+}
+
+body.dark input,
+body.dark select{
+
+background:#374151;
+
+color:white;
+
+border:1px solid #555;
+
+}
+
+body.dark th{
+
+background:#111827;
+
+}
+
+/*=====================================
+THEMES
+=====================================*/
+
+body.blue{
+
+--primary:#2563eb;
+
+}
+
+body.green{
+
+--primary:#16a34a;
+
+}
+
+body.purple{
+
+--primary:#7c3aed;
+
+}
+
+body.red{
+
+--primary:#dc2626;
+
+}

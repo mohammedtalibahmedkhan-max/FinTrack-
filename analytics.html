@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Analytics</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/analytics.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<header class="header">
+
+<h1>Financial Analytics</h1>
+
+<a href="index.html">
+
+← Back to Dashboard
+
+</a>
+
+</header>
+
+<main>
+
+<section class="analytics-grid">
+
+<div class="analytics-card">
+
+<h2>Financial Health</h2>
+
+<h1 id="health-score">
+
+0%
+
+</h1>
+
+</div>
+
+<div class="analytics-card">
+
+<h2>Average Expense</h2>
+
+<h1 id="average-expense">
+
+₹0
+
+</h1>
+
+</div>
+
+<div class="analytics-card">
+
+<h2>Largest Expense</h2>
+
+<h1 id="largest-expense">
+
+₹0
+
+</h1>
+
+</div>
+
+<div class="analytics-card">
+
+<h2>Top Category</h2>
+
+<h1 id="top-category">
+
+-
+
+</h1>
+
+</div>
+
+</section>
+
+<section class="summary-grid">
+
+<div class="analytics-card">
+
+<h2>Total Income</h2>
+
+<h1 id="summary-income">
+
+₹0
+
+</h1>
+
+</div>
+
+<div class="analytics-card">
+
+<h2>Total Expense</h2>
+
+<h1 id="summary-expense">
+
+₹0
+
+</h1>
+
+</div>
+
+<div class="analytics-card">
+
+<h2>Total Savings</h2>
+
+<h1 id="summary-savings">
+
+₹0
+
+</h1>
+
+</div>
+
+<div class="analytics-card">
+
+<h2>Savings Rate</h2>
+
+<h1 id="summary-rate">
+
+0%
+
+</h1>
+
+</div>
+
+</section>
+
+<section class="chart-container">
+
+<canvas id="analyticsChart"></canvas>
+
+</section>
+
+<section class="chart-container">
+
+<h2>Income vs Expense Timeline</h2>
+
+<canvas id="timelineChart"></canvas>
+
+</section>
+
+<section class="chart-container">
+
+<h2>Top 5 Spending Categories</h2>
+
+<div id="top-categories">
+
+</div>
+
+</section>
+
+<section class="chart-container">
+
+<h2>AI Financial Insights</h2>
+
+<div id="financial-insights">
+
+</div>
+
+</section>
+
+</main>
+
+<script src="js/analytics.js"></script>
+
+</body>
+
+</html>

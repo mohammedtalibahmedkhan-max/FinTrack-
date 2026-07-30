@@ -179,6 +179,18 @@ localStorage.getItem("settings")
 
 ) || {};
 
+if(settings.darkMode){
+
+    document.body.classList.add("dark");
+
+}
+
+if(settings.theme){
+
+    document.body.classList.add(settings.theme);
+
+}
+
 const currency =
 
 settings.currency || "₹";
@@ -204,6 +216,12 @@ BUDGET DATA
 ==========================================================*/
 
 let budgets = {};
+
+let budgets =
+JSON.parse(
+    localStorage.getItem("budgets")
+) || {};
+
 let goals = [];
 // Edit Mode
 let editingTransactionId = null;
@@ -628,6 +646,26 @@ function loadTransactions(){
         transactions =
         JSON.parse(savedTransactions);
 
+        const savedBudgets =
+localStorage.getItem("budgets");
+
+if(savedBudgets){
+
+    budgets =
+    JSON.parse(savedBudgets);
+
+}
+
+const savedGoal =
+localStorage.getItem("savingsGoal");
+
+if(savedGoal){
+
+    savingsGoal =
+    Number(savedGoal);
+
+}
+
     }
 
     filterTransactions();
@@ -1027,11 +1065,16 @@ function saveBudget(event){
     const amount =
     Number(budgetAmountInput.value);
 
-    budgets[category]=amount;
+   budgets[category] = amount;
 
-    displayBudgets();
+localStorage.setItem(
+    "budgets",
+    JSON.stringify(budgets)
+);
 
-    budgetForm.reset();
+displayBudgets();
+
+budgetForm.reset();
 
     showToast(
 
@@ -1155,17 +1198,15 @@ function saveGoal(event){
 
     event.preventDefault();
 
-    const goal = {
+    savingsGoal = Number(
+        goalAmountInput.value
+    );
 
-        id:Date.now(),
+    localStorage.setItem(
+        "savingsGoal",
+        savingsGoal
+    );
 
-        name:goalNameInput.value,
-
-        target:Number(goalAmountInput.value)
-
-    };
-
-    goals.push(goal);
 
     displayGoals();
 
