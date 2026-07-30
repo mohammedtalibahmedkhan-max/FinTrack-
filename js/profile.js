@@ -20,6 +20,9 @@ document.getElementById("currency-select");
 const darkMode =
 document.getElementById("dark-mode");
 
+const themeColor =
+document.getElementById("theme-color");
+
 const saveButton =
 document.getElementById("save-profile");
 
@@ -35,6 +38,18 @@ localStorage.getItem("settings")
 
 ) || {};
 
+if(settings.darkMode){
+
+    document.body.classList.add("dark");
+
+}
+
+if(settings.theme){
+
+    document.body.classList.add(settings.theme);
+
+}
+
 profileName.value =
 settings.name || "";
 
@@ -43,6 +58,9 @@ settings.email || "";
 
 currencySelect.value =
 settings.currency || "₹";
+
+themeColor.value =
+settings.theme || "blue";
 
 darkMode.checked =
 settings.darkMode || false;
@@ -105,6 +123,10 @@ currencySelect.value,
 darkMode:
 darkMode.checked,
 
+
+theme:
+themeColor.value,
+
 image:
 profileImage.src
 
@@ -117,6 +139,16 @@ localStorage.setItem(
 JSON.stringify(settings)
 
 );
+
+document.body.className = "";
+
+if(settings.darkMode){
+
+    document.body.classList.add("dark");
+
+}
+
+document.body.classList.add(settings.theme);
 
 alert(
 

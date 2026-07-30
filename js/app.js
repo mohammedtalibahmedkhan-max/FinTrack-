@@ -583,13 +583,13 @@ function updateAnalytics(){
     }
 
     highestExpenseElement.textContent =
-        `₹${highestExpense.toFixed(2)}`;
+        `${currency}${highestExpense.toFixed(2)}`;
 
     highestIncomeElement.textContent =
-        `₹${highestIncome.toFixed(2)}`;
+        `${currency}${highestIncome.toFixed(2)}`;
 
     averageTransactionElement.textContent =
-        `₹${average.toFixed(2)}`;
+        `${currency}${average.toFixed(2)}`;
 
     totalTransactionsElement.textContent =
         transactions.length;
@@ -598,7 +598,7 @@ function updateAnalytics(){
         topCategory;
 
     monthlyExpenseElement.textContent =
-        `₹${monthlyExpense.toFixed(2)}`;
+        `${currency}${monthlyExpense.toFixed(2)}`;
 
 }
 
