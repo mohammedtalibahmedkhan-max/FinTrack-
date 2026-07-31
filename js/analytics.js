@@ -8,7 +8,7 @@ JSON.parse(
 ) || [];
 
 const budgets =
-JSON.parse(localStorage.getItem("budgets")) || {};
+JSON.parse(Storage.getBudgets()) || {};
 
 const savingsGoal =
 Number(localStorage.getItem("savingsGoal")) || 0;

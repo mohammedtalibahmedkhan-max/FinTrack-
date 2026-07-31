@@ -171,13 +171,7 @@ document.getElementById("top-category");
 const monthlyExpenseElement =
 document.getElementById("monthly-expense");
 
-const settings =
-
-JSON.parse(
-
-localStorage.getItem("settings")
-
-) || {};
+const settings = Storage.getSettings();
 
 const currency =
 
@@ -187,7 +181,7 @@ APPLICATION DATA
 ==========================================================*/
 
 let transactions = [];
-
+let financeData = {};
 /*==========================================================
 CHART OBJECTS
 ==========================================================*/
@@ -203,8 +197,16 @@ let monthlyExpenseChart = null;
 BUDGET DATA
 ==========================================================*/
 
-let budgets = {};
+let budgets = Storage.getBudgets();
 let goals = [];
+
+/*==========================================================
+CENTRAL FINANCIAL REPORT
+Stores all calculated values.
+==========================================================*/
+
+let financialReport = {};
+
 // Edit Mode
 let editingTransactionId = null;
 
@@ -287,6 +289,10 @@ window.location="login.html";
 ADD TRANSACTION
 ==========================================================*/
 
+/*==========================================================
+ADD TRANSACTION
+==========================================================*/
+
 function addTransaction(event){
 
     event.preventDefault();
@@ -309,27 +315,38 @@ function addTransaction(event){
     dateInput.value;
 
     const recurring =
-recurringInput.value;
-    const isEditing = editingTransactionId !== null;
+    recurringInput.value;
 
-    if(editingTransactionId !== null){
+    const isEditing =
+    editingTransactionId !== null;
 
-        const transaction =
-        transactions.find(function(item){
 
-            return item.id === editingTransactionId;
 
-        });
 
-        if(transaction){
+    try{
 
-            transaction.title = title;
-            transaction.amount = amount;
-            transaction.category = category;
-            transaction.type = type;
-            transaction.date = date;
+    if(isEditing){
 
-        }
+        const transaction = {
+
+            id: editingTransactionId,
+
+            title,
+
+            amount,
+
+            category,
+
+            type,
+
+            date,
+
+            recurring
+
+        };
+
+        transactions =
+        TransactionService.update(transaction);
 
         editingTransactionId = null;
 
@@ -356,43 +373,88 @@ recurringInput.value;
 
         };
 
-        transactions.push(transaction);
+        transactions =
+        TransactionService.add(transaction);
 
     }
-
-    saveTransactions();
-
-    filterTransactions();
-
-    updateDashboard();
-
-    setTimeout(function(){
-
-    transactionForm.reset();
-
-    showNotification(
-
-    "Success",
-
-    "Transaction saved successfully.",
-
-    "success"
-
-);
+    }catch(error){
 
     hideLoader();
 
     showToast(
 
-        isEditing
-            ? "Transaction updated successfully!"
-            : "Transaction added successfully!",
+        error.message,
 
-        "success"
+        "error"
 
     );
 
-},500);
+    return;
+
+}
+
+    /*
+    ------------------------------------
+    Save latest data
+    ------------------------------------
+    */
+
+    Storage.saveTransactions(
+        transactions
+    );
+
+    /*
+    ------------------------------------
+    Notify entire application
+    ------------------------------------
+    */
+
+    EventBus.emit(
+        "transactionsChanged"
+    );
+
+    /*
+    ------------------------------------
+    Reset form
+    ------------------------------------
+    */
+
+    transactionForm.reset();
+
+    /*
+    ------------------------------------
+    Success Notification
+    ------------------------------------
+    */
+
+    setTimeout(function(){
+
+        hideLoader();
+
+        showNotification(
+
+            "Success",
+
+            isEditing
+            ? "Transaction updated successfully."
+            : "Transaction added successfully.",
+
+            "success"
+
+        );
+
+        showToast(
+
+            isEditing
+            ? "Transaction updated successfully!"
+            : "Transaction added successfully!",
+
+            "success"
+
+        );
+
+    },500);
+
 }
 
 
@@ -462,145 +524,72 @@ function displayTransactions(list = transactions){
 
 
 /*==========================================================
+UPDATE DASHBOARD updating the ui only
+==========================================================*/
+/*==========================================================
 UPDATE DASHBOARD
 ==========================================================*/
 
-function updateDashboard(){
+function updateDashboardCards(){
 
-    let income = 0;
-    let expense = 0;
+    // Calculate all financial data only once
+    const finance = calculateFinanceData(transactions);
 
-    transactions.forEach(function(transaction){
-
-        if(transaction.type === "Income"){
-
-            income += transaction.amount;
-
-        }else{
-
-            expense += transaction.amount;
-
-        }
-
-    });
-
-    const balance = income - expense;
-
-   balanceElement.textContent =
-`${currency}${balance.toFixed(2)}`;
+    // Dashboard Cards
+    balanceElement.textContent =
+    `${currency}${finance.balance.toFixed(2)}`;
 
     incomeElement.textContent =
-    `${currency}${income.toFixed(2)}`;
+    `${currency}${finance.income.toFixed(2)}`;
 
     expenseElement.textContent =
-    `${currency}${expense.toFixed(2)}`;
+    `${currency}${finance.expense.toFixed(2)}`;
 
     savingsElement.textContent =
-    `${currency}${balance.toFixed(2)}`;
+    `${currency}${finance.savings.toFixed(2)}`;
 
+    // Refresh Charts
     updateExpenseChart();
+    updateIncomeExpenseChart();
+    updateMonthlyExpenseChart();
 
-updateIncomeExpenseChart();
+    // Refresh Other Sections
+    displayBudgets();
+    displayGoals();
+    updateInsights();
+    updateAnalytics();
 
-updateMonthlyExpenseChart();
-
-displayBudgets();
-displayGoals();
-updateInsights();
-updateAnalytics();
 }
 /*==========================================================
 UPDATE ANALYTICS
 ==========================================================*/
 
+
 function updateAnalytics(){
 
-    let highestExpense = 0;
-    let highestIncome = 0;
-    let totalAmount = 0;
-    let monthlyExpense = 0;
-
-    const categoryCount = {};
-
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
-    transactions.forEach(function(transaction){
-
-        totalAmount += transaction.amount;
-
-        categoryCount[transaction.category] =
-            (categoryCount[transaction.category] || 0) + 1;
-
-        if(transaction.type === "Expense"){
-
-            if(transaction.amount > highestExpense){
-
-                highestExpense = transaction.amount;
-
-            }
-
-            const transactionDate = new Date(transaction.date);
-
-            if(
-                transactionDate.getMonth() === currentMonth &&
-                transactionDate.getFullYear() === currentYear
-            ){
-
-                monthlyExpense += transaction.amount;
-
-            }
-
-        }else{
-
-            if(transaction.amount > highestIncome){
-
-                highestIncome = transaction.amount;
-
-            }
-
-        }
-
-    });
-
-    const average =
-        transactions.length
-        ? totalAmount / transactions.length
-        : 0;
-
-    let topCategory = "None";
-    let maxCount = 0;
-
-    for(const category in categoryCount){
-
-        if(categoryCount[category] > maxCount){
-
-            maxCount = categoryCount[category];
-            topCategory = category;
-
-        }
-
-    }
+    const finance =
+    calculateFinanceData(transactions);
 
     highestExpenseElement.textContent =
-        `${currency}${highestExpense.toFixed(2)}`;
+    `${currency}${finance.highestExpense.toFixed(2)}`;
 
     highestIncomeElement.textContent =
-        `${currency}${highestIncome.toFixed(2)}`;
+    `${currency}${finance.highestIncome.toFixed(2)}`;
 
     averageTransactionElement.textContent =
-        `${currency}${average.toFixed(2)}`;
+    `${currency}${finance.averageTransaction.toFixed(2)}`;
 
     totalTransactionsElement.textContent =
-        transactions.length;
+    finance.totalTransactions;
 
     topCategoryElement.textContent =
-        topCategory;
+    finance.topCategory || "None";
 
     monthlyExpenseElement.textContent =
-        `${currency}${monthlyExpense.toFixed(2)}`;
+    `${currency}${finance.monthlyExpense.toFixed(2)}`;
 
 }
+
 
 /*==========================================================
 LOCAL STORAGE
@@ -608,34 +597,153 @@ LOCAL STORAGE
 
 function saveTransactions(){
 
-    localStorage.setItem(
-
-        "transactions",
-
-        JSON.stringify(transactions)
-
-    );
+    TransactionService.saveAll(transactions);
 
 }
 
 function loadTransactions(){
 
-    const savedTransactions =
-    localStorage.getItem("transactions");
-
-    if(savedTransactions){
-
-        transactions =
-        JSON.parse(savedTransactions);
-
-    }
+    transactions = TransactionService.getAll();
 
     filterTransactions();
 
-    updateDashboard();
+    UI.refresh();
+
+}
+/*==========================================================
+CENTRAL FINANCIAL CALCULATOR
+This function performs ALL calculations only once.
+==========================================================*/
+
+function calculateFinancialData(){
+
+    const report = {
+
+        income:0,
+
+        expense:0,
+
+        balance:0,
+
+        savings:0,
+
+        highestIncome:0,
+
+        highestExpense:0,
+
+        averageExpense:0,
+
+        expenseCount:0,
+
+        transactionCount:transactions.length,
+
+        monthlyExpense:0,
+
+        topCategory:"",
+
+        categoryTotals:{},
+
+        categoryCount:{}
+
+    };
+transactions.forEach(function(transaction){
+
+    // Calculations will go here
+if(transaction.type === "Income"){
+
+    report.income += transaction.amount;
+
+    if(transaction.amount > report.highestIncome){
+
+        report.highestIncome = transaction.amount;
+
+    }
+
+}else{
+
+    report.expense += transaction.amount;
+
+    report.expenseCount++;
+
+    if(transaction.amount > report.highestExpense){
+
+        report.highestExpense = transaction.amount;
+
+    }
+
+}
+if(!report.categoryTotals[transaction.category]){
+
+    report.categoryTotals[transaction.category] = 0;
 
 }
 
+report.categoryTotals[transaction.category] += transaction.amount;
+
+if(!report.categoryCount[transaction.category]){
+
+    report.categoryCount[transaction.category] = 0;
+
+}
+
+report.categoryCount[transaction.category]++;
+
+const transactionDate = new Date(transaction.date);
+
+const today = new Date();
+
+if(
+
+    transaction.type === "Expense" &&
+
+    transactionDate.getMonth() === today.getMonth() &&
+
+    transactionDate.getFullYear() === today.getFullYear()
+
+){
+
+    report.monthlyExpense += transaction.amount;
+
+}
+
+});
+
+report.balance =
+
+report.income -
+
+report.expense;
+
+report.savings =
+
+report.balance;
+
+
+if(report.expenseCount > 0){
+
+    report.averageExpense =
+
+    report.expense /
+
+    report.expenseCount;
+
+}
+
+let maxCategoryCount = 0;
+
+for(const category in report.categoryCount){
+
+    if(report.categoryCount[category] > maxCategoryCount){
+
+        maxCategoryCount = report.categoryCount[category];
+
+        report.topCategory = category;
+
+    }
+
+}
+return report;
+}
 
 /*==========================================================
 DELETE TRANSACTION
@@ -655,18 +763,11 @@ function deleteTransaction(id){
 
     }
 
-    transactions =
-    transactions.filter(function(transaction){
-
-        return transaction.id !== id;
-
-    });
-
-    saveTransactions();
+   transactions = TransactionService.delete(id);
 
     filterTransactions();
 
-    updateDashboard();
+    UI.refresh();
 
     showNotification(
 
@@ -694,11 +795,7 @@ EDIT TRANSACTION
 function editTransaction(id){
 
     const transaction =
-    transactions.find(function(item){
-
-        return item.id === id;
-
-    });
+TransactionService.getById(id);
 
     if(!transaction){
 
@@ -844,25 +941,9 @@ function filterTransactions(){
 
 function updateExpenseChart(){
 
-    const totals = {};
+    const financeData =
 
-    transactions.forEach(function(transaction){
-
-        if(transaction.type !== "Expense") return;
-
-        if(!totals[transaction.category]){
-
-            totals[transaction.category] = 0;
-
-        }
-
-        totals[transaction.category] += transaction.amount;
-
-    });
-
-    const labels = Object.keys(totals);
-
-    const data = Object.values(totals);
+    calculateFinanceData(transactions);
 
     if(expenseChart){
 
@@ -870,55 +951,67 @@ function updateExpenseChart(){
 
     }
 
-    expenseChart = new Chart(expenseChartCanvas,{
+    expenseChart = new Chart(
 
-        type:"pie",
+        expenseChartCanvas,
 
-        data:{
+        {
 
-            labels:labels,
+            type:"pie",
 
-            datasets:[{
+            data:{
 
-                data:data,
+                labels:
 
-                backgroundColor:[
-                    "#3B82F6",
-                    "#22C55E",
-                    "#F59E0B",
-                    "#EF4444",
-                    "#8B5CF6",
-                    "#14B8A6",
-                    "#EC4899",
-                    "#84CC16"
-                ]
+                    Object.keys(
 
-            }]
+                        financeData.categoryTotals
+
+                    ),
+
+                datasets:[{
+
+                    data:
+
+                    Object.values(
+
+                        financeData.categoryTotals
+
+                    ),
+
+                    backgroundColor:[
+
+                        "#3B82F6",
+
+                        "#22C55E",
+
+                        "#F59E0B",
+
+                        "#EF4444",
+
+                        "#8B5CF6",
+
+                        "#14B8A6",
+
+                        "#EC4899",
+
+                        "#84CC16"
+
+                    ]
+
+                }]
+
+            }
 
         }
 
-    });
+    );
 
 }
 function updateIncomeExpenseChart(){
 
-    let income = 0;
-
-    let expense = 0;
-
-    transactions.forEach(function(transaction){
-
-        if(transaction.type==="Income"){
-
-            income += transaction.amount;
-
-        }else{
-
-            expense += transaction.amount;
-
-        }
-
-    });
+    const financeData =
+    calculateFinanceData(transactions);
 
     if(incomeExpenseChart){
 
@@ -927,65 +1020,73 @@ function updateIncomeExpenseChart(){
     }
 
     incomeExpenseChart =
-    new Chart(incomeExpenseChartCanvas,{
+    new Chart(
 
-        type:"bar",
+        incomeExpenseChartCanvas,
 
-        data:{
+        {
 
-            labels:["Income","Expense"],
+            type:"bar",
 
-            datasets:[{
+            data:{
 
-                data:[income,expense],
+                labels:[
 
-                backgroundColor:[
+                    "Income",
 
-                    "#22C55E",
+                    "Expense"
 
-                    "#EF4444"
+                ],
 
-                ]
+                datasets:[{
 
-            }]
+                    label:"Amount",
+
+                    data:[
+
+                        financeData.income,
+
+                        financeData.expense
+
+                    ],
+
+                    backgroundColor:[
+
+                        "#22C55E",
+
+                        "#EF4444"
+
+                    ]
+
+                }]
+
+            },
+
+            options:{
+
+                responsive:true,
+
+                plugins:{
+
+                    legend:{
+
+                        display:false
+
+                    }
+
+                }
+
+            }
 
         }
 
-    });
+    );
 
 }
 function updateMonthlyExpenseChart(){
 
-    const totals = {};
-
-    transactions.forEach(function(transaction){
-
-        if(transaction.type!=="Expense") return;
-
-        const month =
-        new Date(transaction.date)
-
-        .toLocaleString(
-
-            "default",
-
-            {
-
-                month:"long"
-
-            }
-
-        );
-
-        if(!totals[month]){
-
-            totals[month]=0;
-
-        }
-
-        totals[month]+=transaction.amount;
-
-    });
+    const financeData =
+    calculateFinanceData(transactions);
 
     if(monthlyExpenseChart){
 
@@ -994,27 +1095,67 @@ function updateMonthlyExpenseChart(){
     }
 
     monthlyExpenseChart =
-    new Chart(monthlyExpenseChartCanvas,{
+    new Chart(
 
-        type:"line",
+        monthlyExpenseChartCanvas,
 
-        data:{
+        {
 
-            labels:Object.keys(totals),
+            type:"line",
 
-            datasets:[{
+            data:{
 
-                data:Object.values(totals),
+                labels:
 
-                fill:true,
+                    Object.keys(
 
-                tension:.3
+                        financeData.monthlyTotals
 
-            }]
+                    ),
+
+                datasets:[{
+
+                    label:"Monthly Expense",
+
+                    data:
+
+                    Object.values(
+
+                        financeData.monthlyTotals
+
+                    ),
+
+                    fill:true,
+
+                    tension:0.3,
+
+                    borderColor:"#3B82F6",
+
+                    backgroundColor:"rgba(59,130,246,0.15)"
+
+                }]
+
+            },
+
+            options:{
+
+                responsive:true,
+
+                plugins:{
+
+                    legend:{
+
+                        display:true
+
+                    }
+
+                }
+
+            }
 
         }
 
-    });
+    );
 
 }
 function saveBudget(event){
@@ -1028,6 +1169,8 @@ function saveBudget(event){
     Number(budgetAmountInput.value);
 
     budgets[category]=amount;
+
+    Storage.saveBudgets(budgets);
 
     displayBudgets();
 
@@ -1562,9 +1705,12 @@ SMART INSIGHTS
 
 function updateInsights(){
 
+    const financeData = calculateFinanceData(transactions);
+
     insightsContainer.innerHTML = "";
 
-    if(transactions.length === 0){
+    // No transactions
+    if(financeData.totalTransactions === 0){
 
         insightsContainer.innerHTML = `
 
@@ -1572,11 +1718,7 @@ function updateInsights(){
 
             <h3>No Data</h3>
 
-            <p>
-
-                Add transactions to see financial insights.
-
-            </p>
+            <p>Add transactions to see financial insights.</p>
 
         </div>
 
@@ -1586,110 +1728,14 @@ function updateInsights(){
 
     }
 
-    let categoryTotals = {};
+    // Recommendation
+    let recommendation = financeData.recommendation;
 
-    let largestExpense = null;
-
-    let totalExpense = 0;
-
-    let expenseCount = 0;
-
-    let income = 0;
-
-    transactions.forEach(function(transaction){
-
-        if(transaction.type === "Income"){
-
-            income += transaction.amount;
-
-        }
-
-        if(transaction.type === "Expense"){
-
-            totalExpense += transaction.amount;
-
-            expenseCount++;
-
-            if(
-
-                !largestExpense ||
-
-                transaction.amount >
-
-                largestExpense.amount
-
-            ){
-
-                largestExpense = transaction;
-
-            }
-
-            if(!categoryTotals[transaction.category]){
-
-                categoryTotals[transaction.category] = 0;
-
-            }
-
-            categoryTotals[transaction.category] += transaction.amount;
-
-        }
-
-    });
-
-    let highestCategory = "";
-
-    let highestAmount = 0;
-
-    for(const category in categoryTotals){
-
-        if(categoryTotals[category] > highestAmount){
-
-            highestAmount = categoryTotals[category];
-
-            highestCategory = category;
-
-        }
-
-    }
-
-    const averageExpense =
-
-    expenseCount === 0
-
-    ? 0
-
-    : totalExpense / expenseCount;
-
-    const savings = income - totalExpense;
-
-    const savingsRate =
-
-    income === 0
-
-    ? 0
-
-    : (savings / income) * 100;
-
-    let recommendation =
-
-    "Great job managing your finances.";
-
-    if(savingsRate < 20){
-
-        recommendation =
-
-        "Try saving at least 20% of your income.";
-
-    }
-
-    if(highestCategory){
+    if(financeData.topCategory){
 
         recommendation +=
-
         "<br><br>Highest spending category: <strong>" +
-
-        highestCategory +
-
+        financeData.topCategory +
         "</strong>";
 
     }
@@ -1700,7 +1746,7 @@ function updateInsights(){
 
         <h3>Highest Spending Category</h3>
 
-        <p>${highestCategory || "N/A"}</p>
+        <p>${financeData.topCategory || "N/A"}</p>
 
     </div>
 
@@ -1710,16 +1756,15 @@ function updateInsights(){
 
         <p>
 
-        ${largestExpense ?
-
-        largestExpense.title +
-
-        " (" +
-currency +
-largestExpense.amount.toFixed(2) +
-")"
-
-        : "N/A"}
+        ${
+            financeData.largestExpense
+            ? financeData.largestExpense.title +
+              " (" +
+              currency +
+              financeData.largestExpense.amount.toFixed(2) +
+              ")"
+            : "N/A"
+        }
 
         </p>
 
@@ -1731,7 +1776,7 @@ largestExpense.amount.toFixed(2) +
 
         <p>
 
-        ${currency}${averageExpense.toFixed(2)}
+        ${currency}${financeData.averageExpense.toFixed(2)}
 
         </p>
 
@@ -1743,7 +1788,7 @@ largestExpense.amount.toFixed(2) +
 
         <p>
 
-        ${savingsRate.toFixed(1)}%
+        ${financeData.savingsRate.toFixed(1)}%
 
         </p>
 
@@ -1773,7 +1818,7 @@ generateRecurringTransactions();
 
 filterTransactions();
 
-updateDashboard();
+UI.refresh();
 /*==========================================================
 TOAST NOTIFICATION SYSTEM
 ==========================================================*/

@@ -330,4 +330,4 @@ setupPasswordToggle(
 
 "login-password"
 
-);
+);       
