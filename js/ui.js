@@ -3,22 +3,19 @@
 UI SERVICE
 ====================================================
 
-Responsible only for displaying data.
-
-It NEVER performs calculations.
-
-It NEVER saves data.
+Responsible only for refreshing the UI.
 
 ====================================================
 */
 
 const UI = {
 
-   refresh(){
+    refresh(){
 
-    filterTransactions();
+        filterTransactions();
 
-    updateDashboard();
+        updateDashboardCards();
 
-}
+    }
+
 };

@@ -146,22 +146,6 @@ monthlyTotals[month] =
             (categoryCount[transaction.category] || 0)
             + 1;
 
-        //--------------------------------------------------
-        // Monthly Totals
-        //--------------------------------------------------
-
-        const monthName =
-            new Date(transaction.date)
-            .toLocaleString(
-                "default",
-                {
-                    month:"short"
-                }
-            );
-
-        monthlyTotals[monthName] =
-            (monthlyTotals[monthName] || 0)
-            + transaction.amount;
 
     });
 
@@ -255,34 +239,31 @@ monthlyTotals[month] =
         ? income / incomeCount
         : 0;
 
-    //--------------------------------------------------
-    // Return EVERYTHING
-    //--------------------------------------------------
-/*==================================================
-MONTHLY EXPENSE TOTALS
+  /*==================================================
+RECOMMENDATION
 ==================================================*/
 
-const monthlyExpenseTotals = {};
+let recommendation = "";
 
-transactions.forEach(function(transaction){
+if(income === 0){
 
-    if(transaction.type !== "Expense"){
+    recommendation =
+    "Add income transactions.";
 
-        return;
+}
+else if(savingsRate < 20){
 
-    }
+    recommendation =
+    "Try saving at least 20% of your income.";
 
-    const month =
-    new Date(transaction.date)
-    .toLocaleString("default",{
-        month:"long"
-    });
+}
+else{
 
-    monthlyExpenseTotals[month] =
-    (monthlyExpenseTotals[month] || 0)
-    + transaction.amount;
+    recommendation =
+    "Great job managing your finances.";
 
-});
+}
+
 /*==================================================
 INCOME VS EXPENSE DATA
 ==================================================*/
@@ -313,15 +294,15 @@ const expenseCategoryData = {
     Object.values(categoryTotals)
 
 };
-    return{
+    return {
 
     income,
 
     expense,
 
-    balance: income-expense,
+    balance,
 
-    savings: income-expense,
+    savings,
 
     highestIncome,
 
@@ -329,23 +310,13 @@ const expenseCategoryData = {
 
     monthlyExpense,
 
-    averageTransaction:
+    averageTransaction,
 
-        transactions.length
-
-        ?
-
-        (income+expense)/transactions.length
-
-        :
-
-        0,
-
-    totalTransactions:
-
-        transactions.length,
+    totalTransactions: transactions.length,
 
     topCategory,
+
+    highestCategory,
 
     categoryTotals,
 
@@ -355,49 +326,19 @@ const expenseCategoryData = {
 
     largestExpense,
 
-    averageExpense:
+    largestIncome,
 
-        expenseCount
+    averageExpense,
 
-        ?
+    averageIncome,
 
-        expense/expenseCount
+    savingsRate,
 
-        :
+    recommendation,
 
-        0,
+    incomeExpenseData,
 
-    savingsRate:
-
-        income
-
-        ?
-
-        ((income-expense)/income)*100
-
-        :
-
-        0,
-
-    recommendation:
-
-        income===0
-
-        ?
-
-        "Add income transactions."
-
-        :
-
-        ((income-expense)/income)*100<20
-
-        ?
-
-        "Try saving at least 20% of your income."
-
-        :
-
-        "Great job managing your finances."
+    expenseCategoryData
 
 };
 

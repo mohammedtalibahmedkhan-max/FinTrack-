@@ -717,7 +717,7 @@ insights.push(
 
 `📈 Average expense per transaction is
 
-${currency}${averageExpense.toFixed(2)}.`
+${Formatter.currency(financeData.averageExpense, currency)}`
 
 );
 

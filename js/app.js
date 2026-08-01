@@ -185,7 +185,6 @@ let financeData = {};
 /*==========================================================
 CHART OBJECTS
 ==========================================================*/
-
 let expenseChart = null;
 
 let incomeExpenseChart = null;
@@ -503,7 +502,7 @@ function displayTransactions(list = transactions){
 
             <td>${transaction.type}</td>
 
-            <td>${currency}${transaction.amount.toFixed(2)}</td>
+           <td>${Formatter.currency(transaction.amount, currency)}</td>
 
             <td>
 
@@ -547,41 +546,65 @@ function displayTransactions(list = transactions){
 
 }
 
-
 /*==========================================================
-UPDATE DASHBOARD updating the ui only
-==========================================================*/
-/*==========================================================
-UPDATE DASHBOARD
+UPDATE DASHBOARD CARDS
 ==========================================================*/
 
 function updateDashboardCards(){
 
-    // Calculate all financial data only once
-    const finance = calculateFinanceData(transactions);
+    /*
+    ------------------------------------
+    Calculate financial data ONCE
+    ------------------------------------
+    */
 
-    // Dashboard Cards
+    financialReport =
+    calculateFinanceData(transactions);
+
+    /*
+    ------------------------------------
+    Short Alias
+    ------------------------------------
+    */
+
+    const finance = financialReport;
+
+    /*
+    ------------------------------------
+    Dashboard Cards
+    ------------------------------------
+    */
+
     balanceElement.textContent =
-    `${currency}${finance.balance.toFixed(2)}`;
+    Formatter.currency(finance.balance,currency);
 
     incomeElement.textContent =
-    `${currency}${finance.income.toFixed(2)}`;
+    Formatter.currency(finance.income,currency);
 
     expenseElement.textContent =
-    `${currency}${finance.expense.toFixed(2)}`;
+    Formatter.currency(finance.expense,currency);
 
     savingsElement.textContent =
-    `${currency}${finance.savings.toFixed(2)}`;
+    Formatter.currency(finance.savings,currency);
 
-    // Refresh Charts
-    updateExpenseChart();
-    updateIncomeExpenseChart();
-    updateMonthlyExpenseChart();
+    /*
+    ------------------------------------
+    Refresh Components
+    ------------------------------------
+    */
 
-    // Refresh Other Sections
+  ChartService.updateExpenseChart();
+
+ChartService.updateIncomeExpenseChart();
+
+ChartService.updateMonthlyExpenseChart();
+
     displayBudgets();
+
     displayGoals();
+
     updateInsights();
+
     updateAnalytics();
 
 }
@@ -592,17 +615,25 @@ UPDATE ANALYTICS
 
 function updateAnalytics(){
 
-    const finance =
-    calculateFinanceData(transactions);
+    const finance = financialReport;
 
     highestExpenseElement.textContent =
-    `${currency}${finance.highestExpense.toFixed(2)}`;
+    Formatter.currency(
+        finance.highestExpense,
+        currency
+    );
 
     highestIncomeElement.textContent =
-    `${currency}${finance.highestIncome.toFixed(2)}`;
+    Formatter.currency(
+        finance.highestIncome,
+        currency
+    );
 
     averageTransactionElement.textContent =
-    `${currency}${finance.averageTransaction.toFixed(2)}`;
+    Formatter.currency(
+        finance.averageTransaction,
+        currency
+    );
 
     totalTransactionsElement.textContent =
     finance.totalTransactions;
@@ -611,11 +642,12 @@ function updateAnalytics(){
     finance.topCategory || "None";
 
     monthlyExpenseElement.textContent =
-    `${currency}${finance.monthlyExpense.toFixed(2)}`;
+    Formatter.currency(
+        finance.monthlyExpense,
+        currency
+    );
 
 }
-
-
 /*==========================================================
 LOCAL STORAGE
 ==========================================================*/
@@ -632,140 +664,6 @@ function loadTransactions(){
 
     UI.refresh();
 
-}
-/*==========================================================
-CENTRAL FINANCIAL CALCULATOR
-This function performs ALL calculations only once.
-==========================================================*/
-
-function calculateFinancialData(){
-
-    const report = {
-
-        income:0,
-
-        expense:0,
-
-        balance:0,
-
-        savings:0,
-
-        highestIncome:0,
-
-        highestExpense:0,
-
-        averageExpense:0,
-
-        expenseCount:0,
-
-        transactionCount:transactions.length,
-
-        monthlyExpense:0,
-
-        topCategory:"",
-
-        categoryTotals:{},
-
-        categoryCount:{}
-
-    };
-transactions.forEach(function(transaction){
-
-    // Calculations will go here
-if(transaction.type === "Income"){
-
-    report.income += transaction.amount;
-
-    if(transaction.amount > report.highestIncome){
-
-        report.highestIncome = transaction.amount;
-
-    }
-
-}else{
-
-    report.expense += transaction.amount;
-
-    report.expenseCount++;
-
-    if(transaction.amount > report.highestExpense){
-
-        report.highestExpense = transaction.amount;
-
-    }
-
-}
-if(!report.categoryTotals[transaction.category]){
-
-    report.categoryTotals[transaction.category] = 0;
-
-}
-
-report.categoryTotals[transaction.category] += transaction.amount;
-
-if(!report.categoryCount[transaction.category]){
-
-    report.categoryCount[transaction.category] = 0;
-
-}
-
-report.categoryCount[transaction.category]++;
-
-const transactionDate = new Date(transaction.date);
-
-const today = new Date();
-
-if(
-
-    transaction.type === "Expense" &&
-
-    transactionDate.getMonth() === today.getMonth() &&
-
-    transactionDate.getFullYear() === today.getFullYear()
-
-){
-
-    report.monthlyExpense += transaction.amount;
-
-}
-
-});
-
-report.balance =
-
-report.income -
-
-report.expense;
-
-report.savings =
-
-report.balance;
-
-
-if(report.expenseCount > 0){
-
-    report.averageExpense =
-
-    report.expense /
-
-    report.expenseCount;
-
-}
-
-let maxCategoryCount = 0;
-
-for(const category in report.categoryCount){
-
-    if(report.categoryCount[category] > maxCategoryCount){
-
-        maxCategoryCount = report.categoryCount[category];
-
-        report.topCategory = category;
-
-    }
-
-}
-return report;
 }
 
 /*==========================================================
@@ -788,7 +686,7 @@ function deleteTransaction(id){
 
    transactions = TransactionService.delete(id);
 
-    UI.refresh();
+    EventBus.emit("transactionsChanged");
 
     showNotification(
 
@@ -960,225 +858,6 @@ function filterTransactions(){
 
 }
 
-function updateExpenseChart(){
-
-    const financeData =
-
-    calculateFinanceData(transactions);
-
-    if(expenseChart){
-
-        expenseChart.destroy();
-
-    }
-
-    expenseChart = new Chart(
-
-        expenseChartCanvas,
-
-        {
-
-            type:"pie",
-
-            data:{
-
-                labels:
-
-                    Object.keys(
-
-                        financeData.categoryTotals
-
-                    ),
-
-                datasets:[{
-
-                    data:
-
-                    Object.values(
-
-                        financeData.categoryTotals
-
-                    ),
-
-                    backgroundColor:[
-
-                        "#3B82F6",
-
-                        "#22C55E",
-
-                        "#F59E0B",
-
-                        "#EF4444",
-
-                        "#8B5CF6",
-
-                        "#14B8A6",
-
-                        "#EC4899",
-
-                        "#84CC16"
-
-                    ]
-
-                }]
-
-            }
-
-        }
-
-    );
-
-}
-function updateIncomeExpenseChart(){
-
-    const financeData =
-    calculateFinanceData(transactions);
-
-    if(incomeExpenseChart){
-
-        incomeExpenseChart.destroy();
-
-    }
-
-    incomeExpenseChart =
-    new Chart(
-
-        incomeExpenseChartCanvas,
-
-        {
-
-            type:"bar",
-
-            data:{
-
-                labels:[
-
-                    "Income",
-
-                    "Expense"
-
-                ],
-
-                datasets:[{
-
-                    label:"Amount",
-
-                    data:[
-
-                        financeData.income,
-
-                        financeData.expense
-
-                    ],
-
-                    backgroundColor:[
-
-                        "#22C55E",
-
-                        "#EF4444"
-
-                    ]
-
-                }]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                plugins:{
-
-                    legend:{
-
-                        display:false
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    );
-
-}
-function updateMonthlyExpenseChart(){
-
-    const financeData =
-    calculateFinanceData(transactions);
-
-    if(monthlyExpenseChart){
-
-        monthlyExpenseChart.destroy();
-
-    }
-
-    monthlyExpenseChart =
-    new Chart(
-
-        monthlyExpenseChartCanvas,
-
-        {
-
-            type:"line",
-
-            data:{
-
-                labels:
-
-                    Object.keys(
-
-                        financeData.monthlyTotals
-
-                    ),
-
-                datasets:[{
-
-                    label:"Monthly Expense",
-
-                    data:
-
-                    Object.values(
-
-                        financeData.monthlyTotals
-
-                    ),
-
-                    fill:true,
-
-                    tension:0.3,
-
-                    borderColor:"#3B82F6",
-
-                    backgroundColor:"rgba(59,130,246,0.15)"
-
-                }]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                plugins:{
-
-                    legend:{
-
-                        display:true
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    );
-
-}
 function saveBudget(event){
 
     event.preventDefault();
@@ -1205,11 +884,19 @@ if(!validation.valid){
 
 }
 
-    budgets[category]=amount;
+  budgets = BudgetService.add(
 
-    Storage.saveBudgets(budgets);
+    category,
 
-    displayBudgets();
+    amount
+
+);
+
+EventBus.emit(
+
+    "transactionsChanged"
+
+);
 
     budgetForm.reset();
 
@@ -1285,11 +972,11 @@ function displayBudgets(){
 
             <p>
 
-            ${currency}${spent.toFixed(2)}
+           ${Formatter.currency(spent, currency)}
 
             /
 
-            ${currency}${budget.toFixed(2)}
+           ${Formatter.currency(budget, currency)}
 
             </p>
 
@@ -1319,6 +1006,16 @@ function displayBudgets(){
 
             </p>
 
+            <button
+
+onclick="deleteBudget('${category}')"
+
+class="delete-btn">
+
+Delete
+
+</button>
+
         </div>
 
         `;
@@ -1327,6 +1024,26 @@ function displayBudgets(){
 
 }
 
+
+function deleteBudget(category){
+
+    budgets = BudgetService.delete(category);
+
+    EventBus.emit(
+
+        "transactionsChanged"
+
+    );
+
+    showToast(
+
+        "Budget deleted.",
+
+        "warning"
+
+    );
+
+}
 /*==================================================
 SAVE GOAL
 ==================================================*/
@@ -1423,11 +1140,11 @@ function displayGoals(){
 
             <p>
 
-                ${currency}${savings.toFixed(2)}
+               ${Formatter.currency(savings, currency)}
 
                 /
 
-                ₹${goal.target.toFixed(2)}
+               ${Formatter.currency(goal.target, currency)}
 
             </p>
 
@@ -1472,7 +1189,7 @@ function deleteGoal(id){
 
     });
 
-    displayGoals();
+    EventBus.emit("transactionsChanged");
 
 }
 
@@ -1750,7 +1467,9 @@ function generateRecurringTransactions(){
 
     });
 
-    saveTransactions();
+    Storage.saveTransactions(transactions);
+
+EventBus.emit("transactionsChanged");
 
 }
 /*==========================================================
@@ -1759,12 +1478,9 @@ SMART INSIGHTS
 
 function updateInsights(){
 
-    const financeData = calculateFinanceData(transactions);
-
     insightsContainer.innerHTML = "";
 
-    // No transactions
-    if(financeData.totalTransactions === 0){
+    if(financialReport.totalTransactions === 0){
 
         insightsContainer.innerHTML = `
 
@@ -1782,14 +1498,17 @@ function updateInsights(){
 
     }
 
-    // Recommendation
-    let recommendation = financeData.recommendation;
+    let recommendation =
+    financialReport.recommendation;
 
-    if(financeData.topCategory){
+    if(financialReport.topCategory){
 
         recommendation +=
+
         "<br><br>Highest spending category: <strong>" +
-        financeData.topCategory +
+
+        financialReport.topCategory +
+
         "</strong>";
 
     }
@@ -1800,7 +1519,7 @@ function updateInsights(){
 
         <h3>Highest Spending Category</h3>
 
-        <p>${financeData.topCategory || "N/A"}</p>
+        <p>${financialReport.topCategory || "N/A"}</p>
 
     </div>
 
@@ -1811,11 +1530,11 @@ function updateInsights(){
         <p>
 
         ${
-            financeData.largestExpense
-            ? financeData.largestExpense.title +
+            financialReport.largestExpense
+            ? financialReport.largestExpense.title +
               " (" +
               currency +
-              financeData.largestExpense.amount.toFixed(2) +
+              financialReport.largestExpense.amount.toFixed(2) +
               ")"
             : "N/A"
         }
@@ -1830,7 +1549,7 @@ function updateInsights(){
 
         <p>
 
-        ${currency}${financeData.averageExpense.toFixed(2)}
+        ${currency}${financialReport.averageExpense.toFixed(2)}
 
         </p>
 
@@ -1842,7 +1561,7 @@ function updateInsights(){
 
         <p>
 
-        ${financeData.savingsRate.toFixed(1)}%
+        ${financialReport.savingsRate.toFixed(1)}%
 
         </p>
 
@@ -1863,6 +1582,27 @@ function updateInsights(){
     `;
 
 }
+
+
+/*
+====================================================
+APPLICATION EVENTS
+====================================================
+*/
+
+EventBus.on(
+
+    "transactionsChanged",
+
+    function(){
+
+        UI.refresh();
+
+    }
+
+);
+
+
 /*==========================================================
 INITIALIZE
 ==========================================================*/
