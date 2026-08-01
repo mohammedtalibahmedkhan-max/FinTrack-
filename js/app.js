@@ -317,6 +317,31 @@ function addTransaction(event){
     const recurring =
     recurringInput.value;
 
+
+    const validation = ValidationService.validateTransaction({
+
+    title,
+
+    amount,
+
+    category,
+
+    type,
+
+    date
+
+});
+
+if(!validation.valid){
+
+    hideLoader();
+
+    showToast(validation.message,"error");
+
+    return;
+
+}
+
     const isEditing =
     editingTransactionId !== null;
 
@@ -605,8 +630,6 @@ function loadTransactions(){
 
     transactions = TransactionService.getAll();
 
-    filterTransactions();
-
     UI.refresh();
 
 }
@@ -764,8 +787,6 @@ function deleteTransaction(id){
     }
 
    transactions = TransactionService.delete(id);
-
-    filterTransactions();
 
     UI.refresh();
 
@@ -1168,6 +1189,22 @@ function saveBudget(event){
     const amount =
     Number(budgetAmountInput.value);
 
+    const validation = ValidationService.validateBudget(
+
+    category,
+
+    amount
+
+);
+
+if(!validation.valid){
+
+    showToast(validation.message,"error");
+
+    return;
+
+}
+
     budgets[category]=amount;
 
     Storage.saveBudgets(budgets);
@@ -1307,6 +1344,23 @@ function saveGoal(event){
         target:Number(goalAmountInput.value)
 
     };
+
+    const validation = ValidationService.validateGoal(
+
+    goalNameInput.value,
+
+    Number(goalAmountInput.value)
+
+);
+
+if(!validation.valid){
+
+    showToast(validation.message,"error");
+
+    return;
+
+}
+
 
     goals.push(goal);
 
@@ -1815,9 +1869,6 @@ INITIALIZE
 
 loadTransactions();
 generateRecurringTransactions();
-
-filterTransactions();
-
 UI.refresh();
 /*==========================================================
 TOAST NOTIFICATION SYSTEM
