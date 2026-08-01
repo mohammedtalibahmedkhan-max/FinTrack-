@@ -197,7 +197,7 @@ BUDGET DATA
 ==========================================================*/
 
 let budgets = Storage.getBudgets();
-let goals = [];
+let goals = GoalService.getAll();
 
 /*==========================================================
 CENTRAL FINANCIAL REPORT
@@ -1079,18 +1079,27 @@ if(!validation.valid){
 }
 
 
-    goals.push(goal);
+    goals = GoalService.add(goal);
 
-    displayGoals();
+EventBus.emit("transactionsChanged");
 
-    goalForm.reset();
+goalForm.reset();
+
+showToast(
+
+    "Goal saved successfully!",
+
+    "success"
+
+);
 
 }
 /*==================================================
 DISPLAY GOAL
 ==================================================*/
 function displayGoals(){
-
+ 
+    goals = GoalService.getAll();
     goalList.innerHTML="";
 
     let income=0;
@@ -1183,13 +1192,21 @@ function displayGoals(){
 
 function deleteGoal(id){
 
-    goals = goals.filter(function(goal){
+    goals = GoalService.delete(id);
 
-        return goal.id !== id;
+    EventBus.emit(
 
-    });
+        "transactionsChanged"
 
-    EventBus.emit("transactionsChanged");
+    );
+
+    showToast(
+
+        "Goal deleted successfully!",
+
+        "warning"
+
+    );
 
 }
 
