@@ -1,144 +1,111 @@
 /*
 ====================================================
-Statistics Engine
+STATISTICS ENGINE
+====================================================
 
-Responsible for:
+Responsible for advanced financial statistics.
 
-• Largest Expense
-• Highest Category
-• Average Expense
-• Savings Rate
-• Recommendation
-• Expense Percentages
+Never touches the UI.
+
+Only returns calculated data.
 
 ====================================================
 */
 
-function calculateStatistics(transactions, financeData){
+const StatisticsEngine = {
 
-    let largestExpense = null;
+    calculate(report){
 
-    const categoryTotals = {};
+        const stats = {};
 
-    transactions.forEach(function(transaction){
+        stats.healthScore =
+            this.calculateHealth(report);
 
-        if(transaction.type !== "Expense"){
+        stats.cashFlow =
+            report.income - report.expense;
 
-            return;
+        stats.dailyExpense =
+            this.calculateDailyExpense(report);
 
-        }
+        stats.highestMonth =
+            this.getHighestMonth(report);
 
-        if(
+        return stats;
 
-            largestExpense === null ||
+    },
 
-            transaction.amount >
+    calculateHealth(report){
 
-            largestExpense.amount
+        if(report.income === 0){
 
-        ){
-
-            largestExpense = transaction;
-
-        }
-
-        if(!categoryTotals[transaction.category]){
-
-            categoryTotals[transaction.category] = 0;
+            return 0;
 
         }
 
-        categoryTotals[transaction.category] += transaction.amount;
+        const savingsRate =
+            (report.balance / report.income) * 100;
 
-    });
+        let score = 50;
 
-    let highestCategory = "";
+        score += savingsRate;
 
-    let highestAmount = 0;
+        if(report.expense > report.income){
 
-    for(const category in categoryTotals){
-
-        if(categoryTotals[category] > highestAmount){
-
-            highestAmount = categoryTotals[category];
-
-            highestCategory = category;
+            score -= 25;
 
         }
 
-    }
+        if(score > 100){
 
-    const expenseTransactions =
+            score = 100;
 
-    transactions.filter(function(transaction){
+        }
 
-        return transaction.type === "Expense";
+        if(score < 0){
 
-    });
+            score = 0;
 
-    const averageExpense =
+        }
 
-    expenseTransactions.length
+        return Math.round(score);
 
-    ?
+    },
 
-    financeData.expense /
+    calculateDailyExpense(report){
 
-    expenseTransactions.length
+        const today = new Date();
 
-    :
+        const days =
+            new Date(
+                today.getFullYear(),
+                today.getMonth()+1,
+                0
+            ).getDate();
 
-    0;
+        return report.monthlyExpense / days;
 
-    let savingsRate = 0;
+    },
 
-    if(financeData.income > 0){
+    getHighestMonth(report){
 
-        savingsRate =
+        let month = "-";
 
-        (
+        let amount = 0;
 
-            financeData.balance /
+        for(const key in report.monthlyTotals){
 
-            financeData.income
+            if(report.monthlyTotals[key] > amount){
 
-        ) * 100;
+                amount = report.monthlyTotals[key];
 
-    }
+                month = key;
 
-    let recommendation =
-    "Excellent financial management.";
+            }
 
-    if(savingsRate < 20){
+        }
 
-        recommendation =
-        "Try saving at least 20% of your income.";
-
-    }
-
-    if(financeData.balance < 0){
-
-        recommendation =
-        "Your expenses exceed your income.";
+        return month;
 
     }
 
-    return{
-
-        largestExpense,
-
-        highestCategory,
-
-        highestAmount,
-
-        averageExpense,
-
-        savingsRate,
-
-        recommendation,
-
-        categoryTotals
-
-    };
-
-}
+};

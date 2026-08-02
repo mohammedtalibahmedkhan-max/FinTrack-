@@ -17,6 +17,11 @@ document.getElementById("profile-email");
 const currencySelect =
 document.getElementById("currency-select");
 
+if (currencySelect) {
+    currencySelect.value =
+    SettingsService.getCurrency();
+}
+
 const darkMode =
 document.getElementById("dark-mode");
 
@@ -155,6 +160,12 @@ alert(
 "Profile Updated Successfully"
 
 );
+
+});
+
+currencySelect.addEventListener("change", function () {
+
+    SettingsService.setCurrency(this.value);
 
 });
 

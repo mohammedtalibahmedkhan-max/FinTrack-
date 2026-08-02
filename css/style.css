@@ -1148,3 +1148,533 @@ SMART INSIGHTS
     line-height:1.7;
 
 }
+
+
+#advisor-container,
+#ai-advisor-container{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(250px,1fr));
+
+    gap:15px;
+
+    margin:20px 0;
+
+}
+
+.advisor-card{
+
+    background:white;
+
+    padding:18px;
+
+    border-radius:12px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.advisor-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+.advisor-card.success{
+
+    border-left:5px solid #22C55E;
+
+}
+
+.advisor-card.warning{
+
+    border-left:5px solid #F59E0B;
+
+}
+
+.advisor-card.danger{
+
+    border-left:5px solid #EF4444;
+
+}
+
+.advisor-card.info{
+
+    border-left:5px solid #3B82F6;
+
+}
+
+
+.forecast-section{
+
+    margin-top:30px;
+
+}
+
+#forecast-container{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(260px,1fr));
+
+    gap:20px;
+
+}
+
+.forecast-card{
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    text-align:center;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.forecast-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+.forecast-card h2{
+
+    color:#3B82F6;
+
+    margin-top:10px;
+
+}
+
+.report-section{
+
+    margin-top:40px;
+
+}
+
+#report-container{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(240px,1fr));
+
+    gap:20px;
+
+}
+
+.report-card{
+
+    background:#fff;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    text-align:center;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.report-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+.report-card h3{
+
+    color:#555;
+
+}
+
+.report-card h2{
+
+    margin-top:10px;
+
+    color:#2563EB;
+
+}
+
+
+.subscription-section{
+
+    margin-top:40px;
+
+}
+
+#subscription-form{
+
+    display:grid;
+
+    gap:15px;
+
+    margin-bottom:20px;
+
+}
+
+#subscription-list{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(260px,1fr));
+
+    gap:20px;
+
+}
+
+.subscription-card{
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.subscription-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+
+.reminder-section{
+
+    margin-top:40px;
+
+}
+
+#bill-reminder-container{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(250px,1fr));
+
+    gap:20px;
+
+}
+
+.reminder-card{
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+}
+
+.reminder-card.success{
+
+    border-left:5px solid #22C55E;
+
+}
+
+.reminder-card.info{
+
+    border-left:5px solid #3B82F6;
+
+}
+
+.reminder-card.warning{
+
+    border-left:5px solid #F59E0B;
+
+}
+
+.reminder-card.danger{
+
+    border-left:5px solid #EF4444;
+
+}
+.bill-card{
+
+    background:#fff;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
+    border-radius:12px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+}
+
+.bill-card button{
+
+    margin-right:10px;
+
+    margin-top:10px;
+
+}
+
+.success{
+
+    color:#22C55E;
+
+    font-weight:bold;
+
+}
+
+.warning{
+
+    color:#F59E0B;
+
+    font-weight:bold;
+
+}
+
+.danger{
+
+    color:#EF4444;
+
+    font-weight:bold;
+
+}
+
+.info{
+
+    color:#3B82F6;
+
+    font-weight:bold;
+
+}
+
+.badge{
+
+    display:inline-block;
+
+    padding:4px 10px;
+
+    margin-left:8px;
+
+    background:#3B82F6;
+
+    color:white;
+
+    border-radius:20px;
+
+    font-size:12px;
+
+}
+.timeline-card{
+
+    background:white;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
+    border-left:5px solid #3B82F6;
+
+    border-radius:10px;
+
+    box-shadow:0 6px 15px rgba(0,0,0,.08);
+
+}
+
+.timeline-card h3{
+
+    margin-bottom:5px;
+
+}
+
+
+
+/*====================================================
+CALENDAR
+====================================================*/
+
+.calendar{
+
+    background:#ffffff;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    margin:20px 0;
+
+}
+
+.calendar-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+.calendar-header button{
+
+    padding:8px 14px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#3B82F6;
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+.calendar-header button:hover{
+
+    opacity:.9;
+
+}
+
+#calendar-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(7,1fr);
+
+    gap:10px;
+
+}
+
+.calendar-day{
+
+    min-height:80px;
+
+    background:#f5f5f5;
+
+    border-radius:10px;
+
+    padding:10px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    text-align:center;
+
+    font-weight:600;
+
+}
+
+.calendar-day:hover{
+
+    background:#3B82F6;
+
+    color:white;
+
+}
+
+#day-events{
+
+    margin-top:20px;
+
+}
+
+
+.calendar-weekdays{
+
+display:grid;
+
+grid-template-columns:repeat(7,1fr);
+
+font-weight:600;
+
+margin-bottom:10px;
+
+text-align:center;
+
+}
+
+.calendar-weekdays div{
+
+padding:10px;
+
+}
+
+/*====================================================
+ACHIEVEMENT SECTION
+====================================================*/
+
+.challenge-section{
+
+    margin:30px 0;
+
+}
+
+#challenge-container{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(240px,1fr));
+
+    gap:20px;
+
+}
+
+.challenge-card{
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    text-align:center;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.challenge-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+.challenge-card h1{
+
+    font-size:48px;
+
+    margin-bottom:10px;
+
+}
+
+.challenge-card h3{
+
+    margin-bottom:10px;
+
+}

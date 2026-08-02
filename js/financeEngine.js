@@ -294,6 +294,124 @@ const expenseCategoryData = {
     Object.values(categoryTotals)
 
 };
+
+/*==================================================
+FINANCIAL HEALTH SCORE
+==================================================*/
+
+const expenseRatio =
+income > 0
+? (expense / income) * 100
+: 100;
+
+let healthScore = 100;
+
+if(expenseRatio > 90){
+
+    healthScore -= 40;
+
+}
+else if(expenseRatio > 70){
+
+    healthScore -= 20;
+
+}
+
+if(savingsRate < 20){
+
+    healthScore -= 20;
+
+}
+
+if(expenseCount > incomeCount * 3){
+
+    healthScore -= 10;
+
+}
+
+healthScore = Math.max(0, Math.min(100, healthScore));
+
+const cashFlow = income - expense;
+const averageDailyExpense =
+monthlyExpense / Math.max(new Date().getDate(),1);
+
+let highestMonth = "";
+let highestMonthAmount = 0;
+
+for(const month in monthlyTotals){
+
+    if(monthlyTotals[month] > highestMonthAmount){
+
+        highestMonthAmount =
+        monthlyTotals[month];
+
+        highestMonth = month;
+
+    }
+
+}
+
+let lowestMonth = "";
+let lowestMonthAmount = Infinity;
+
+for(const month in monthlyTotals){
+
+    if(monthlyTotals[month] < lowestMonthAmount){
+
+        lowestMonthAmount =
+        monthlyTotals[month];
+
+        lowestMonth = month;
+
+    }
+
+}
+
+/*==================================================
+FINANCIAL HEALTH
+==================================================*/
+
+
+if(income === 0){
+
+    healthScore = 0;
+
+}else{
+
+    const ratio = expense / income;
+
+    healthScore = Math.max(
+
+        0,
+
+        Math.min(
+
+            100,
+
+            Math.round((1 - ratio) * 100)
+
+        )
+
+    );
+
+}
+
+/*==================================================
+DAILY EXPENSE
+==================================================*/
+
+const uniqueDays = new Set();
+
+transactions.forEach(function(transaction){
+
+    if(transaction.type === "Expense"){
+
+        uniqueDays.add(transaction.date);
+
+    }
+
+});
+
     return {
 
     income,
@@ -338,7 +456,21 @@ const expenseCategoryData = {
 
     incomeExpenseData,
 
-    expenseCategoryData
+    expenseCategoryData,
+
+    healthScore,
+
+    cashFlow,
+
+    averageDailyExpense,
+
+    highestMonth,
+
+    highestMonthAmount,
+
+    lowestMonth,
+
+    lowestMonthAmount
 
 };
 

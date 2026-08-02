@@ -81,6 +81,33 @@ const Storage = {
 
     },
 
+
+    /*=========================
+BILLS
+=========================*/
+
+saveBills(bills){
+
+    localStorage.setItem(
+
+        "bills",
+
+        JSON.stringify(bills)
+
+    );
+
+},
+
+getBills(){
+
+    return JSON.parse(
+
+        localStorage.getItem("bills")
+
+    ) || [];
+
+},
+
     /*=========================
     SETTINGS
     =========================*/

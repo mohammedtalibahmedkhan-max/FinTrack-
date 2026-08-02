@@ -55,7 +55,20 @@ document.getElementById("recurring");
 // Transaction Table
 const transactionList =
 document.getElementById("transaction-list");
+const billForm =
+document.getElementById("bill-form");
 
+const billTitleInput =
+document.getElementById("bill-title");
+
+const billAmountInput =
+document.getElementById("bill-amount");
+
+const billDateInput =
+document.getElementById("bill-date");
+
+const billList =
+document.getElementById("bill-list");
 // Dashboard Cards
 const balanceElement =
 document.getElementById("balance");
@@ -65,6 +78,18 @@ document.getElementById("income");
 
 const expenseElement =
 document.getElementById("expense");
+
+const healthScoreElement =
+document.getElementById("health-score");
+
+const cashFlowElement =
+document.getElementById("cash-flow");
+
+const dailyExpenseElement =
+document.getElementById("daily-expense");
+
+const highestMonthElement =
+document.getElementById("highest-month");
 
 const savingsElement =
 document.getElementById("savings");
@@ -141,6 +166,17 @@ document.getElementById("notification-container");
 
 const insightsContainer =
 document.getElementById("insights-container");
+
+const forecastContainer =
+document.getElementById(
+    "forecast-container"
+);
+
+const challengeContainer =
+document.getElementById("challenge-container");
+
+const aiAdvisorContainer =
+document.getElementById("ai-advisor-container");
 /*==========================================================
 LOADING ELEMENT
 ==========================================================*/
@@ -171,11 +207,81 @@ document.getElementById("top-category");
 const monthlyExpenseElement =
 document.getElementById("monthly-expense");
 
-const settings = Storage.getSettings();
+const bestMonthElement =
+document.getElementById("best-month");
 
+
+const worstMonthElement =
+document.getElementById("worst-month");
+
+
+const expenseGrowthElement =
+document.getElementById("expense-growth");
+
+const currencySelect =
+document.getElementById(
+    "currency-select"
+);
+
+const reportContainer =
+document.getElementById("report-container");
+
+
+
+const subscriptionForm =
+document.getElementById("subscription-form");
+
+const subscriptionName =
+document.getElementById("subscription-name");
+
+const subscriptionAmount =
+document.getElementById("subscription-amount");
+
+const subscriptionDate =
+document.getElementById("subscription-date");
+
+const subscriptionFrequency =
+document.getElementById("subscription-frequency");
+
+const subscriptionList =
+document.getElementById("subscription-list");
+
+const billReminderContainer =
+document.getElementById(
+    "bill-reminder-container"
+);
+
+const billRecurringInput =
+document.getElementById(
+    "bill-recurring"
+);
+
+const calendarGrid =
+document.getElementById(
+"calendar-grid"
+);
+
+const calendarTitle =
+document.getElementById(
+"calendar-title"
+);
+
+const dayEvents =
+document.getElementById(
+"day-events"
+);
+
+const previousMonthButton =
+document.getElementById(
+"prev-month"
+);
+
+const nextMonthButton =
+document.getElementById(
+"next-month"
+);
 const currency =
-
-settings.currency || "₹";
+SettingsService.getCurrency();
 /*==========================================================
 APPLICATION DATA
 ==========================================================*/
@@ -198,7 +304,13 @@ BUDGET DATA
 
 let budgets = Storage.getBudgets();
 let goals = GoalService.getAll();
+let bills =
+BillService.getAll();
+let subscriptions =
+SubscriptionService.getAll();
 
+let calendarDate =
+new Date();
 /*==========================================================
 CENTRAL FINANCIAL REPORT
 Stores all calculated values.
@@ -233,6 +345,14 @@ goalForm.addEventListener(
     saveGoal
 
 );
+billForm.addEventListener(
+
+    "submit",
+
+    saveBill
+
+);
+
 searchInput.addEventListener(
     "input",
     filterTransactions
@@ -278,6 +398,36 @@ function(){
 localStorage.removeItem(
 
 "loggedIn"
+
+);
+
+currencySelect.addEventListener(
+
+    "change",
+
+    function(){
+
+        SettingsService.setCurrency(
+
+            currencySelect.value
+
+        );
+
+        EventBus.emit(
+
+            "transactionsChanged"
+
+        );
+
+    }
+
+);
+
+subscriptionForm.addEventListener(
+
+    "submit",
+
+    saveSubscription
 
 );
 
@@ -552,6 +702,7 @@ UPDATE DASHBOARD CARDS
 
 function updateDashboardCards(){
 
+    const currency = SettingsService.getCurrency();
     /*
     ------------------------------------
     Calculate financial data ONCE
@@ -569,24 +720,45 @@ function updateDashboardCards(){
 
     const finance = financialReport;
 
+
+    const stats =
+StatisticsEngine.calculate(finance);
+
+
     /*
     ------------------------------------
     Dashboard Cards
     ------------------------------------
     */
+balanceElement.textContent =
+Formatter.currency(finance.balance, currency);
 
-    balanceElement.textContent =
-    Formatter.currency(finance.balance,currency);
+incomeElement.textContent =
+Formatter.currency(finance.income, currency);
 
-    incomeElement.textContent =
-    Formatter.currency(finance.income,currency);
+expenseElement.textContent =
+Formatter.currency(finance.expense, currency);
 
-    expenseElement.textContent =
-    Formatter.currency(finance.expense,currency);
+savingsElement.textContent =
+Formatter.currency(finance.savings, currency);
 
-    savingsElement.textContent =
-    Formatter.currency(finance.savings,currency);
+healthScoreElement.textContent =
+stats.healthScore + "%";
 
+cashFlowElement.textContent =
+Formatter.currency(
+    stats.cashFlow,
+    currency
+);
+
+dailyExpenseElement.textContent =
+Formatter.currency(
+    stats.dailyExpense,
+    currency
+);
+
+highestMonthElement.textContent =
+stats.highestMonth;
     /*
     ------------------------------------
     Refresh Components
@@ -603,49 +775,38 @@ ChartService.updateMonthlyExpenseChart();
 
     displayGoals();
 
+    displayBills();
+
+    CalendarRenderer.render();
+
+checkDueBills();
+
     updateInsights();
 
-    updateAnalytics();
+    updateAIAdvisor();
 
-}
-/*==========================================================
-UPDATE ANALYTICS
-==========================================================*/
+    updateForecast();
+
+    updateChallenges();
+
+    updateFinancialReport();
+
+   const analytics =
+AnalyticsService.generate(
+    financialReport
+);
 
 
-function updateAnalytics(){
+bestMonthElement.textContent =
+analytics.bestMonth;
 
-    const finance = financialReport;
 
-    highestExpenseElement.textContent =
-    Formatter.currency(
-        finance.highestExpense,
-        currency
-    );
+worstMonthElement.textContent =
+analytics.worstMonth;
 
-    highestIncomeElement.textContent =
-    Formatter.currency(
-        finance.highestIncome,
-        currency
-    );
 
-    averageTransactionElement.textContent =
-    Formatter.currency(
-        finance.averageTransaction,
-        currency
-    );
-
-    totalTransactionsElement.textContent =
-    finance.totalTransactions;
-
-    topCategoryElement.textContent =
-    finance.topCategory || "None";
-
-    monthlyExpenseElement.textContent =
-    Formatter.currency(
-        finance.monthlyExpense,
-        currency
-    );
+expenseGrowthElement.textContent =
+analytics.expenseGrowth + "%";
 
 }
 /*==========================================================
@@ -1094,6 +1255,369 @@ showToast(
 );
 
 }
+
+/*====================================================
+SAVE BILL
+====================================================*/
+
+function saveBill(event){
+
+    event.preventDefault();
+
+    const bill = {
+
+    id: Date.now(),
+
+    title: billTitleInput.value.trim(),
+
+    amount: Number(billAmountInput.value),
+
+    dueDate: billDateInput.value,
+
+    paid:false,
+
+    recurring:
+billRecurringInput.checked,
+
+    lastGenerated:
+
+        new Date(billDateInput.value)
+
+        .getMonth()
+
+};
+    bills = BillService.add(bill);
+
+    displayBills();
+
+    billForm.reset();
+
+    showToast("Bill added successfully!","success");
+
+}
+/*====================================================
+DISPLAY BILLS
+====================================================*/
+
+function displayBills(){
+
+    billList.innerHTML="";
+
+    if(bills.length===0){
+
+        billList.innerHTML=
+
+        "<p>No bills added.</p>";
+
+        return;
+
+    }
+
+    const today =
+    new Date();
+
+    bills.forEach(function(bill){
+
+        const due =
+        new Date(bill.dueDate);
+
+        let status="Upcoming";
+
+        let color="info";
+
+        if(bill.paid){
+
+            status="Paid";
+
+            color="success";
+
+        }
+
+        else if(due < today){
+
+            status="Overdue";
+
+            color="danger";
+
+        }
+
+        else if(
+
+            due.toDateString()===
+
+            today.toDateString()
+
+        ){
+
+            status="Due Today";
+
+            color="warning";
+
+        }
+
+        billList.innerHTML += `
+
+        <div class="bill-card">
+
+            <h3>${bill.title}</h3>
+
+            ${
+bill.recurring
+?
+"<span class='badge'>Monthly</span>"
+:
+""
+}
+
+            <p>Amount :
+            ${currency}${bill.amount}</p>
+
+            <p>Due :
+            ${bill.dueDate}</p>
+
+            <p class="${color}">
+
+                ${status}
+
+            </p>
+
+            <button
+
+                onclick="markBillPaid(${bill.id})">
+
+                Mark Paid
+
+            </button>
+
+            <button
+
+                onclick="deleteBill(${bill.id})">
+
+                Delete
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+
+/*====================================================
+SHOW EVENTS OF SELECTED DAY
+====================================================*/
+
+function showDayEvents(date){
+
+    dayEvents.innerHTML = "";
+
+    const events =
+
+    CalendarService.getEvents(
+
+        transactions,
+
+        bills,
+
+        subscriptions
+
+    );
+
+    let found = false;
+
+    events.forEach(function(event){
+
+        if(event.date === date){
+
+            found = true;
+
+            dayEvents.innerHTML += `
+
+            <div class="timeline-card">
+
+                <h3>${event.title}</h3>
+
+                <p>${event.type}</p>
+
+                <small>${event.date}</small>
+
+            </div>
+
+            `;
+
+        }
+
+    });
+
+    if(!found){
+
+        dayEvents.innerHTML =
+
+        "<p>No events for this day.</p>";
+
+    }
+
+}
+/*====================================================
+DELETE BILL
+====================================================*/
+
+function deleteBill(id){
+
+    bills = BillService.remove(id);
+
+    displayBills();
+
+    showToast(
+
+        "Bill deleted.",
+
+        "warning"
+
+    );
+
+}
+
+
+/*====================================================
+MARK BILL PAID
+====================================================*/
+
+function markBillPaid(id){
+
+    bills = BillService.markPaid(id);
+
+    displayBills();
+
+    showToast(
+
+        "Bill marked as paid.",
+
+        "success"
+
+    );
+
+}
+
+/*====================================================
+CHECK DUE BILLS
+====================================================*/
+
+function checkDueBills(){
+
+    const today =
+    new Date();
+
+    bills.forEach(function(bill){
+
+        if(bill.paid){
+
+            return;
+
+        }
+
+        const due =
+        new Date(bill.dueDate);
+
+        const diff =
+
+        Math.ceil(
+
+            (due - today)
+
+            /
+
+            (1000*60*60*24)
+
+        );
+
+        if(diff===0){
+
+            showNotification(
+
+                "Bill Reminder",
+
+                bill.title +
+
+                " is due today.",
+
+                "warning"
+
+            );
+
+        }
+
+        if(diff<0){
+
+            showNotification(
+
+                "Overdue",
+
+                bill.title +
+
+                " payment overdue.",
+
+                "error"
+
+            );
+
+        }
+
+    });
+
+}
+
+/*====================================================
+AUTO GENERATE MONTHLY BILLS
+====================================================*/
+
+function generateRecurringBills(){
+
+    const today = new Date();
+
+    const month = today.getMonth();
+
+    bills.forEach(function(bill){
+
+        if(!bill.recurring){
+
+            return;
+
+        }
+
+        if(bill.lastGenerated === month){
+
+            return;
+
+        }
+
+        const nextBill = {
+
+            ...bill,
+
+            id: Date.now() + Math.random(),
+
+            paid:false,
+
+            dueDate:
+                today.toISOString().split("T")[0],
+
+            lastGenerated:month
+
+        };
+
+        bills.push(nextBill);
+
+    });
+
+    BillService.saveAll(bills);
+
+}
+
+
 /*==================================================
 DISPLAY GOAL
 ==================================================*/
@@ -1345,9 +1869,16 @@ showToast(
         doc.text(transaction.title, 20, y);
         doc.text(transaction.category, 60, y);
         doc.text(transaction.type, 110, y);
-        doc.text(`${currency}${transaction.amount}`,150,y);
+        doc.text(
+    Formatter.currency(
+        transaction.amount,
+        currency
+    ),
+    150,
+    y
+);
         doc.text(transaction.date, 180, y);
-        doc.text(transaction.recurring, 230, y);
+       doc.text(String(transaction.recurring),230,y);
 
         if(transaction.type === "Income"){
 
@@ -1378,15 +1909,27 @@ showToast(
 
     doc.setFontSize(14);
 
-    doc.text(`Income : ${currency}${income.toFixed(2)}`,20,y);
+   doc.text(
+    `Income : ${Formatter.currency(income,currency)}`,
+    20,
+    y
+);
 
     y += 10;
 
-    doc.text(`Expense : ${currency}${expense.toFixed(2)}`,20,y);
+   doc.text(
+    `Expense : ${Formatter.currency(expense,currency)}`,
+    20,
+    y
+);
 
     y += 10;
 
-    doc.text(`Balance : ${currency}${balance.toFixed(2)}`,20,y);
+   doc.text(
+    `Balance : ${Formatter.currency(balance,currency)}`,
+    20,
+    y
+);
 
     doc.save("FinTrack-Report.pdf");
 
@@ -1600,7 +2143,483 @@ function updateInsights(){
 
 }
 
+function updateAIAdvisor(){
 
+    const advice =
+    AIAdvisorService.generate(financialReport);
+
+    aiAdvisorContainer.innerHTML = "";
+
+    advice.forEach(function(item){
+
+        aiAdvisorContainer.innerHTML += `
+
+        <div class="advisor-card ${item.type}">
+
+            <h3>${item.title}</h3>
+
+            <p>${item.message}</p>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+
+function updateForecast(){
+
+    const forecast =
+    ForecastService.generate(
+        financialReport
+    );
+
+    forecastContainer.innerHTML = `
+
+    <div class="forecast-card">
+
+        <h3>Next Month Expense</h3>
+
+        <h2>
+
+        ${Formatter.currency(
+            forecast.nextMonthExpense,
+            SettingsService.getCurrency()
+        )}
+
+        </h2>
+
+    </div>
+
+    <div class="forecast-card">
+
+        <h3>Expected Savings</h3>
+
+        <h2>
+
+        ${Formatter.currency(
+            forecast.expectedSavings,
+            SettingsService.getCurrency()
+        )}
+
+        </h2>
+
+    </div>
+
+    <div class="forecast-card">
+
+        <h3>Financial Trend</h3>
+
+        <h2>
+
+        ${forecast.trend}
+
+        </h2>
+
+    </div>
+
+    `;
+
+}
+
+/*====================================================
+UPDATE CHALLENGES
+====================================================*/
+
+function updateChallenges(){
+
+    const badges =
+    ChallengeService.generate(financialReport);
+
+    challengeContainer.innerHTML = "";
+
+    if(badges.length===0){
+
+        challengeContainer.innerHTML = `
+
+        <div class="challenge-card">
+
+            <h3>
+
+                🎯 No Achievements Yet
+
+            </h3>
+
+            <p>
+
+                Keep improving your finances to unlock badges.
+
+            </p>
+
+        </div>
+
+        `;
+
+        return;
+
+    }
+
+    badges.forEach(function(badge){
+
+        challengeContainer.innerHTML += `
+
+        <div class="challenge-card">
+
+            <h1>
+
+                ${badge.icon}
+
+            </h1>
+
+            <h3>
+
+                ${badge.title}
+
+            </h3>
+
+            <p>
+
+                ${badge.description}
+
+            </p>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+function updateFinancialReport(){
+
+    const report =
+    ReportService.generate(financialReport);
+
+    reportContainer.innerHTML = `
+
+    <div class="report-card">
+
+        <h3>Total Income</h3>
+
+        <h2>
+
+        ${Formatter.currency(report.income, SettingsService.getCurrency())}
+
+        </h2>
+
+    </div>
+
+    <div class="report-card">
+
+        <h3>Total Expense</h3>
+
+        <h2>
+
+        ${Formatter.currency(report.expense, SettingsService.getCurrency())}
+
+        </h2>
+
+    </div>
+
+    <div class="report-card">
+
+        <h3>Balance</h3>
+
+        <h2>
+
+        ${Formatter.currency(report.balance, SettingsService.getCurrency())}
+
+        </h2>
+
+    </div>
+
+    <div class="report-card">
+
+        <h3>Savings Rate</h3>
+
+        <h2>
+
+        ${report.savingsRate.toFixed(1)}%
+
+        </h2>
+
+    </div>
+
+    <div class="report-card">
+
+        <h3>Health Score</h3>
+
+        <h2>
+
+        ${report.healthScore}
+
+        </h2>
+
+    </div>
+
+    <div class="report-card">
+
+        <h3>Cash Flow</h3>
+
+        <h2>
+
+        ${Formatter.currency(report.cashFlow, SettingsService.getCurrency())}
+
+        </h2>
+
+    </div>
+
+    <div class="report-card">
+
+        <h3>Total Transactions</h3>
+
+        <h2>
+
+        ${report.totalTransactions}
+
+        </h2>
+
+    </div>
+
+    <div class="report-card">
+
+        <h3>Top Category</h3>
+
+        <h2>
+
+        ${report.topCategory}
+
+        </h2>
+
+    </div>
+
+    `;
+
+}
+
+
+function saveSubscription(event){
+
+    event.preventDefault();
+
+    const subscription = {
+
+        id:Date.now(),
+
+        name:
+        subscriptionName.value,
+
+        amount:
+        Number(subscriptionAmount.value),
+
+        dueDate:
+        subscriptionDate.value,
+
+        frequency:
+        subscriptionFrequency.value
+
+    };
+
+    subscriptions =
+    SubscriptionService.add(subscription);
+
+    displaySubscriptions();
+
+    subscriptionForm.reset();
+
+    showToast(
+
+        "Subscription Added",
+
+        "success"
+
+    );
+
+}
+
+function displaySubscriptions(){
+
+    subscriptionList.innerHTML="";
+
+    subscriptions.forEach(function(item){
+
+        subscriptionList.innerHTML += `
+
+        <div class="subscription-card">
+
+            <h3>${item.name}</h3>
+
+            <p>
+
+            ${Formatter.currency(
+                item.amount,
+                SettingsService.getCurrency()
+            )}
+
+            </p>
+
+            <p>
+
+            Due :
+
+            ${item.dueDate}
+
+            </p>
+
+            <p>
+
+            ${item.frequency}
+
+            </p>
+
+            <button
+
+            onclick="deleteSubscription(${item.id})">
+
+            Delete
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+    updateBillReminders();
+
+}
+
+function updateBillReminders(){
+
+    const today = new Date();
+
+    billReminderContainer.innerHTML = "";
+
+    subscriptions.forEach(function(item){
+
+        const due = new Date(item.dueDate);
+
+        const difference =
+
+        Math.ceil(
+
+            (due - today)
+
+            /
+
+            (1000*60*60*24)
+
+        );
+
+        let status = "";
+        let css = "";
+
+        if(difference < 0){
+
+            status = "Overdue";
+
+            css = "danger";
+
+        }
+
+        else if(difference === 0){
+
+            status = "Due Today";
+
+            css = "warning";
+
+        }
+
+        else if(difference <= 7){
+
+            status =
+
+            "Due in " +
+
+            difference +
+
+            " day(s)";
+
+            css = "info";
+
+        }
+
+        else{
+
+            status =
+
+            "Upcoming";
+
+            css = "success";
+
+        }
+
+        billReminderContainer.innerHTML += `
+
+        <div class="reminder-card ${css}">
+
+            <h3>${item.name}</h3>
+
+            <p>
+
+            ${Formatter.currency(
+
+                item.amount,
+
+                SettingsService.getCurrency()
+
+            )}
+
+            </p>
+
+            <p>${status}</p>
+
+            <button
+
+            onclick="paySubscription(${item.id})">
+
+            Mark Paid
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+function paySubscription(id){
+
+    subscriptions =
+
+    SubscriptionService.markPaid(id);
+
+    updateBillReminders();
+
+    showToast(
+
+        "Subscription marked as paid.",
+
+        "success"
+
+    );
+
+}
+
+function deleteSubscription(id){
+
+    subscriptions =
+    SubscriptionService.delete(id);
+
+    displaySubscriptions();
+
+}
 /*
 ====================================================
 APPLICATION EVENTS
@@ -1619,14 +2638,45 @@ EventBus.on(
 
 );
 
+/*====================================================
+CALENDAR NAVIGATION
+====================================================*/
 
+previousMonthButton.onclick = function(){
+
+    calendarDate.setMonth(
+
+        calendarDate.getMonth() - 1
+
+    );
+
+    CalendarRenderer.render();
+
+};
+
+nextMonthButton.onclick = function(){
+
+    calendarDate.setMonth(
+
+        calendarDate.getMonth() + 1
+
+    );
+
+    CalendarRenderer.render();
+
+};
 /*==========================================================
 INITIALIZE
 ==========================================================*/
 
 loadTransactions();
+displaySubscriptions();
+displayBills();
+generateRecurringBills();
+checkDueBills();
 generateRecurringTransactions();
 UI.refresh();
+CalendarRenderer.render();
 /*==========================================================
 TOAST NOTIFICATION SYSTEM
 ==========================================================*/

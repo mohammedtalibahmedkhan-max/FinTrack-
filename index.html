@@ -199,11 +199,8 @@ id="logout-btn">
 
 <i class="fa-solid fa-right-from-bracket"></i>
 
-<!-- </button>
+</button>
 
-<i class="fa-solid fa-right-from-bracket"></i>
-
-</button> -->
 
         </div>
 
@@ -280,62 +277,127 @@ id="logout-btn">
     <!--==========================================================
 ANALYTICS PANEL
 ===========================================================-->
+<article class="analytics-card">
 
-<section class="analytics-section">
+    <h3>Highest Expense</h3>
 
-    <h2>Financial Insights</h2>
+    <p id="highest-expense">₹0.00</p>
 
-    <div class="analytics-grid">
+</article>
 
-        <article class="analytics-card">
+<article class="analytics-card">
 
-            <h3>Highest Expense</h3>
+    <h3>Highest Income</h3>
 
-            <p id="highest-expense">₹0.00</p>
+    <p id="highest-income">₹0.00</p>
 
-        </article>
+</article>
 
-        <article class="analytics-card">
+<article class="analytics-card">
 
-            <h3>Highest Income</h3>
+    <h3>Average Transaction</h3>
 
-            <p id="highest-income">₹0.00</p>
+    <p id="average-transaction">₹0.00</p>
 
-        </article>
+</article>
 
-        <article class="analytics-card">
+<article class="analytics-card">
 
-            <h3>Average Transaction</h3>
+    <h3>Total Transactions</h3>
 
-            <p id="average-transaction">₹0.00</p>
+    <p id="total-transactions">0</p>
 
-        </article>
+</article>
 
-        <article class="analytics-card">
+<article class="analytics-card">
 
-            <h3>Total Transactions</h3>
+    <h3>Most Used Category</h3>
 
-            <p id="total-transactions">0</p>
+    <p id="top-category">None</p>
 
-        </article>
+</article>
 
-        <article class="analytics-card">
+<article class="analytics-card">
 
-            <h3>Most Used Category</h3>
+    <h3>This Month Expense</h3>
 
-            <p id="top-category">None</p>
+    <p id="monthly-expense">₹0.00</p>
 
-        </article>
+</article>
 
-        <article class="analytics-card">
+<article class="analytics-card">
 
-            <h3>This Month Expense</h3>
+<h3>Best Month</h3>
 
-            <p id="monthly-expense">₹0.00</p>
+<p id="best-month">-</p>
 
-        </article>
+</article>
 
-    </div>
+
+<article class="analytics-card">
+
+<h3>Worst Month</h3>
+
+<p id="worst-month">-</p>
+
+</article>
+
+
+<article class="analytics-card">
+
+<h3>Expense Growth</h3>
+
+<p id="expense-growth">0%</p>
+
+</article>
+
+
+<!-- NEW CARD -->
+
+<article class="analytics-card">
+
+    <h3>Health Score</h3>
+
+    <p id="health-score">0</p>
+
+</article>
+
+<!-- NEW CARD -->
+
+<article class="analytics-card">
+
+    <h3>Cash Flow</h3>
+
+    <p id="cash-flow">₹0</p>
+
+</article>
+
+<!-- NEW CARD -->
+
+<article class="analytics-card">
+
+    <h3>Daily Expense</h3>
+
+    <p id="daily-expense">₹0</p>
+
+</article>
+
+<!-- NEW CARD -->
+
+<article class="analytics-card">
+
+    <h3>Highest Month</h3>
+
+    <p id="highest-month">-</p>
+
+</article>
+
+
+<article class="dashboard-card">
+    <h3>Monthly Subscriptions</h3>
+    <h2 id="subscription-total">₹0</h2>
+</article>
+
 
 </section>
      <section class="charts-section">
@@ -415,6 +477,117 @@ ANALYTICS PANEL
     </div>
 
 </section>
+
+<section class="subscription-section">
+
+    <h2>💳 Subscription Manager</h2>
+
+    <form id="subscription-form">
+
+        <input
+            id="subscription-name"
+            placeholder="Subscription Name"
+            required>
+
+        <input
+            id="subscription-amount"
+            type="number"
+            placeholder="Amount"
+            required>
+
+        <input
+            id="subscription-date"
+            type="date"
+            required>
+
+        <select id="subscription-frequency">
+
+            <option>Monthly</option>
+
+            <option>Yearly</option>
+
+        </select>
+
+        <button>
+
+            Add Subscription
+
+        </button>
+
+    </form>
+
+    <div id="subscription-list"></div>
+
+</section>
+
+<section class="reminder-section">
+
+    <h2>🔔 Upcoming Bills</h2>
+
+    <div id="bill-reminder-container"></div>
+
+</section>
+<section class="calendar-section">
+
+<h2>
+📅 Financial Timeline
+</h2>
+
+<div class="calendar">
+
+    <div class="calendar-header">
+
+        <button id="prev-month">
+
+            ◀
+
+        </button>
+
+        <h2 id="calendar-title">
+
+            July 2026
+
+        </h2>
+
+        <button id="next-month">
+
+            ▶
+
+        </button>
+
+    </div>
+
+    <div class="calendar-weekdays">
+
+    <div>Sun</div>
+
+    <div>Mon</div>
+
+    <div>Tue</div>
+
+    <div>Wed</div>
+
+    <div>Thu</div>
+
+    <div>Fri</div>
+
+    <div>Sat</div>
+
+</div>
+
+
+    <div id="calendar-grid">
+
+    </div>
+
+</div>
+
+<div id="day-events">
+
+</div>
+
+</section>
+
 <!-- ========================================
      Savings Goal
 ========================================= -->
@@ -448,6 +621,55 @@ ANALYTICS PANEL
     <div id="goal-list">
 
     </div>
+
+
+    <hr>
+
+<h2>📅 Bills & Due Dates</h2>
+
+<form id="bill-form">
+
+    <input
+        type="text"
+        id="bill-title"
+        placeholder="Bill Name"
+        required
+    >
+
+    <input
+        type="number"
+        id="bill-amount"
+        placeholder="Amount"
+        required
+    >
+
+    <input
+        type="date"
+        id="bill-date"
+        required
+    >
+
+    <button type="submit">
+
+        Add Bill
+
+    </button>
+
+    <label>
+
+<input
+type="checkbox"
+id="bill-recurring"
+checked>
+
+Monthly Recurring
+
+</label>
+
+</form>
+
+<div id="bill-list"></div>
+
 
 </section>
     <!--==========================================================
@@ -732,9 +954,41 @@ SMART INSIGHTS
 
     <h2>📊 Smart Financial Insights</h2>
 
+    <div id="ai-advisor-container"></div>
+
     <div id="insights-container">
 
     </div>
+
+</section>
+
+<section class="challenge-section">
+
+    <h2>
+
+        🏆 Achievements
+
+    </h2>
+
+    <div id="challenge-container">
+
+    </div>
+
+</section>
+
+<section class="forecast-section">
+
+    <h2>📈 Expense Forecast</h2>
+
+    <div id="forecast-container"></div>
+
+</section>
+
+<section class="report-section">
+
+    <h2>📑 Financial Report</h2>
+
+    <div id="report-container"></div>
 
 </section>
 </main>
@@ -779,17 +1033,28 @@ JavaScript will create notifications here.
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- Main JavaScript -->
  <script src="js/storage.js"></script>
+ <script src="js/services/settingsService.js"></script>
  <script src="js/services/eventBus.js"></script>
-<script src="js/financeEngine.js"></script>
-<script src="js/services/chartService.js"></script>
 <script src="js/services/financeService.js"></script>
-<script src="js/transactionService.js"></script>
+<script src="js/services/transactionService.js"></script>
 <script src="js/services/budgetService.js"></script>
 <script src="js/services/goalService.js"></script>
+<script src="js/services/exportService.js"></script>
 <script src="js/validationService.js"></script>
+<script src="js/financeEngine.js"></script>
+<script src="js/services/chartService.js"></script>
+<script src="js/services/analyticsService.js"></script>
+<script src="js/services/aiAdvisorService.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/statisticsEngine.js"></script>
 <script src="js/utils/formatter.js"></script>
+<script src="js/services/forecastService.js"></script>
+<script src="js/services/challengeService.js"></script>
+<script src="js/services/reportService.js"></script>
+<script src="js/services/subscriptionService.js"></script>
+<script src="js/services/calendarService.js"></script>
+<script src="js/services/calendarRenderer.js"></script>
+<script src="js/services/billService.js"></script>
 <script src="js/app.js"></script>
 
 </body>
